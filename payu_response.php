@@ -49,6 +49,19 @@ if ($hash_valid && strtolower($status) === 'success') {
     $pdo->prepare("UPDATE orders SET payment_status = 'paid', payu_txnid = ? WHERE id = ?")->execute([$payu_mihpayid, $order['id']]);
     clear_cart();
     unset($_SESSION['cart_notes']);
+
+    // Restore session if lost during PayU redirect
+    if (!is_logged_in() && !empty($order['user_id'])) {
+        $stmt_user = $pdo->prepare("SELECT id, name, role FROM users WHERE id = ? AND is_active = 1");
+        $stmt_user->execute([$order['user_id']]);
+        $session_user = $stmt_user->fetch();
+        if ($session_user) {
+            $_SESSION['user_id'] = $session_user['id'];
+            $_SESSION['user_name'] = $session_user['name'];
+            $_SESSION['user_role'] = $session_user['role'];
+        }
+    }
+
     header("Location: order-confirmation.php?order_number=" . urlencode($order_number));
     exit();
 } else {
