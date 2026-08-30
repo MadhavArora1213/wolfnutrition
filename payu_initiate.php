@@ -160,7 +160,7 @@ try {
 $txnid      = $order_number;
 $productinfo = 'Wolf Nutrition Order ' . $order_number;
 $amount     = number_format($totals['total'], 2, '.', '');
-$returnurl  = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/wolfnutrition/payu_response.php';
+$returnurl  = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['SCRIPT_NAME']), '/') . '/payu_response.php';
 $surl       = $returnurl;
 $furl       = $returnurl;
 
