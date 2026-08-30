@@ -20,6 +20,10 @@ if (is_admin_logged_in()) {
 $login_error = '';
 $is_locked_out = false;
 
+if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
+    $login_error = "Session expired due to inactivity. Please login again.";
+}
+
 // --- Handle POST login ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 

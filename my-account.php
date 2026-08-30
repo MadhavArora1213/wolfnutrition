@@ -62,8 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $action_error = "Current password is incorrect.";
         } elseif ($new !== $confirm) {
             $action_error = "New passwords do not match.";
-        } elseif (strlen($new) < 6) {
-            $action_error = "New password must be at least 6 characters long.";
+        } elseif (strlen($new) < 8) {
+            $action_error = "New password must be at least 8 characters long.";
+        } elseif (!preg_match('/[A-Z]/', $new) || !preg_match('/[a-z]/', $new) || !preg_match('/[0-9]/', $new) || !preg_match('/[@$!%*?&]/', $new)) {
+            $action_error = "Password must include uppercase, lowercase, number, and special character (@$!%*?&).";
         } else {
             $stmt_u = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
             $stmt_u->execute([password_hash($new, PASSWORD_BCRYPT), $user['id']]);
@@ -1089,7 +1091,7 @@ $address_count = count($addresses);
                                 <div class="acct-field">
                                     <label for="new_password">New Password</label>
                                     <div class="acct-pwd-wrap">
-                                        <input type="password" name="new_password" id="new_password" placeholder="Minimum 6 characters" required>
+                                        <input type="password" name="new_password" id="new_password" placeholder="Min 8 chars, uppercase, lowercase, number, special" required>
                                         <button type="button" class="acct-pwd-toggle" onclick="togglePwd('new_password','iconNew')">
                                             <i id="iconNew" class="far fa-eye"></i>
                                         </button>

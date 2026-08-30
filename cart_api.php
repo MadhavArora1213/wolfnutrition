@@ -32,6 +32,10 @@ function clamp_quantity($qty) {
 
 switch ($action) {
     case 'add':
+        if (!is_logged_in()) {
+            echo json_encode(['success' => false, 'login_required' => true, 'message' => 'Please login to add items to cart.']);
+            exit();
+        }
         $product_id = (int)($_POST['product_id'] ?? 0);
         $variant_id = (int)($_POST['variant_id'] ?? 0);
         $qty = clamp_quantity($_POST['quantity'] ?? 1);
@@ -54,6 +58,10 @@ switch ($action) {
         break;
 
     case 'add_bundle':
+        if (!is_logged_in()) {
+            echo json_encode(['success' => false, 'login_required' => true, 'message' => 'Please login to add items to cart.']);
+            exit();
+        }
         $bundle_id = (int)($_POST['bundle_id'] ?? 0);
         $qty = clamp_quantity($_POST['quantity'] ?? 1);
 

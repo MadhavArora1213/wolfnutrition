@@ -231,6 +231,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     updateCartCountBadge(data.cart_count);
                     openCart(); // Show slide drawer
+                } else if (data.login_required) {
+                    window.location.href = 'login.php';
                 } else {
                     alert(data.message || 'Error adding item to cart.');
                 }
@@ -263,6 +265,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     updateCartCountBadge(data.cart_count);
                     openCart();
+                } else if (data.login_required) {
+                    window.location.href = 'login.php';
                 } else {
                     alert(data.message || 'Error adding item.');
                 }
@@ -291,6 +295,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     updateCartCountBadge(data.cart_count);
                     openCart();
+                } else if (data.login_required) {
+                    window.location.href = 'login.php';
                 } else {
                     alert(data.message || 'Combo is currently out of stock.');
                 }
@@ -298,6 +304,39 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(err => console.error('Error adding bundle:', err));
         });
     }
+
+    // Buy Now buttons
+    document.querySelectorAll('.buy-now-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var productId = this.dataset.productId;
+            var variantId = this.dataset.variantId;
+            var csrf = this.dataset.csrf;
+
+            var formData = new FormData();
+            formData.append('action', 'add');
+            formData.append('product_id', productId);
+            formData.append('variant_id', variantId);
+            formData.append('quantity', 1);
+            formData.append('csrf_token', csrf);
+
+            fetch('cart_api.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    window.location.href = 'checkout.php';
+                } else if (data.login_required) {
+                    window.location.href = 'login.php';
+                } else {
+                    alert(data.message || 'Error adding item.');
+                }
+            })
+            .catch(function(err) { console.error('Error buy now:', err); });
+        });
+    });
 
     // Refresh Cart count badge
     function updateCartCountBadge(count) {
@@ -375,6 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 formData.append('action', 'update');
                 formData.append('key', key);
                 formData.append('qty', newVal);
+                formData.append('csrf_token', window.__csrfToken || '');
 
                 fetch('cart_api.php', {
                     method: 'POST',
@@ -397,6 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const formData = new FormData();
                 formData.append('action', 'remove');
                 formData.append('key', key);
+                formData.append('csrf_token', window.__csrfToken || '');
 
                 fetch('cart_api.php', {
                     method: 'POST',

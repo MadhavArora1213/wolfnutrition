@@ -92,7 +92,6 @@ if ($active_page === 'product.php' && isset($_GET['slug'])) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="dns-prefetch" href="https://checkout.razorpay.com">
 
     <!-- JSON-LD Structured Data for Search Engine rich snippets -->
     <script type="application/ld+json">
@@ -224,8 +223,6 @@ if ($active_page === 'product.php' && isset($_GET['slug'])) {
 
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Razorpay Checkout SDK -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <!-- Header CSS -->
     <link rel="stylesheet" href="assets/css/header-clean.css">
     <!-- Main Style CSS -->

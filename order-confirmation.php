@@ -9,8 +9,8 @@ if (empty($order_number)) {
     exit();
 }
 
-// Validate order number format (ORD-XXXX pattern)
-if (!preg_match('/^ORD-\d{4,}$/', $order_number)) {
+// Validate order number format
+if (!preg_match('/^WN-\d+-\d{4}$/', $order_number)) {
     header("Location: index.php");
     exit();
 }

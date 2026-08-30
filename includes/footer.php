@@ -78,6 +78,7 @@ require_once __DIR__ . '/functions.php';
     </footer>
 
     <!-- Main Script JS -->
+    <script>window.__csrfToken = '<?php echo generate_csrf_token(); ?>';</script>
     <script src="assets/js/main.js"></script>
     <script>
     function handleFooterNewsletterSubmit(e) {

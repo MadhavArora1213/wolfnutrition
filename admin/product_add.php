@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
     $how_to_use = trim($_POST['how_to_use']);
     $disclaimer = trim($_POST['disclaimer']);
     $is_active = isset($_POST['is_active']) ? 1 : 0;
+    $shipping_charges = (float)($_POST['shipping_charges'] ?? 0);
 
     // Handle main image upload
     $image_url = '';
@@ -78,10 +79,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
             $action_error = "Product slug already exists. Please choose a unique slug.";
         } else {
             $stmt_i = $pdo->prepare("
-                INSERT INTO products (name, slug, short_description, description, category_id, image_url, image_gallery, benefits, ingredients, how_to_use, disclaimer, is_active) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO products (name, slug, short_description, description, category_id, image_url, image_gallery, benefits, ingredients, how_to_use, disclaimer, is_active, shipping_charges) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
-            $stmt_i->execute([$name, $slug, $short_description, $description, $category_id, $image_url, $image_gallery, $benefits, $ingredients, $how_to_use, $disclaimer, $is_active]);
+            $stmt_i->execute([$name, $slug, $short_description, $description, $category_id, $image_url, $image_gallery, $benefits, $ingredients, $how_to_use, $disclaimer, $is_active, $shipping_charges]);
             header("Location: products.php?msg=added");
             exit();
         }
@@ -279,6 +280,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
                     <label class="form-label">Disclaimer</label>
                     <textarea name="disclaimer" id="p-disclaimer" class="form-input" rows="3" placeholder="Safety warnings / disclaimers"></textarea>
                 </div>
+            </div>
+        </div>
+
+        <!-- Section: Shipping -->
+        <div class="form-section-card" style="margin-bottom:20px;">
+            <div class="form-section-title">
+                <i class="fas fa-truck"></i> Shipping
+            </div>
+            <div style="max-width:350px;">
+                <label class="form-label">Shipping Charges (₹)</label>
+                <input type="number" name="shipping_charges" class="form-input" placeholder="0" min="0" step="0.01" value="0">
+                <span class="form-hint">Set to 0 for Free Shipping. Enter amount in ₹ otherwise.</span>
             </div>
         </div>
 

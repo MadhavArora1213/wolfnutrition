@@ -12,60 +12,66 @@ $login_error = '';
 // get_client_ip() is now provided by includes/security.php via includes/functions.php
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_btn'])) {
-    $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
-
-    if (empty($email) || empty($password)) {
-        $login_error = "Please fill in all details.";
+    if (!verify_csrf_token()) {
+        $login_error = "Invalid security token. Please try again.";
     } else {
-        $ip = get_client_ip();
-        
-        // 1. Purge expired login attempts (> 15 minutes)
-        $stmt_purge = $pdo->prepare("DELETE FROM login_attempts WHERE attempt_time < NOW() - INTERVAL 15 MINUTE");
-        $stmt_purge->execute();
-        
-        // 2. Check if rate-limited (limit: 5 attempts per IP or Email)
-        $stmt_count = $pdo->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip_address = ? OR email = ?");
-        $stmt_count->execute([$ip, $email]);
-        $failed_attempts = $stmt_count->fetchColumn();
-        
-        if ($failed_attempts >= 5) {
-            $login_error = "Too many failed login attempts. Account temporarily locked. Please try again after 15 minutes.";
+        $email = trim($_POST['email']);
+        $password = trim($_POST['password']);
+
+        if (empty($email) || empty($password)) {
+            $login_error = "Please fill in all details.";
         } else {
-            // 3. Query User
-            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND is_active = 1");
-            $stmt->execute([$email]);
-            $user = $stmt->fetch();
-
-            if ($user && password_verify($password, $user['password'])) {
-                // Reset rate limiting attempts on success
-                $stmt_reset = $pdo->prepare("DELETE FROM login_attempts WHERE ip_address = ? OR email = ?");
-                $stmt_reset->execute([$ip, $email]);
-
-                if ($user['role'] === 'admin') {
-                    $_SESSION['admin_id'] = $user['id'];
-                    $_SESSION['admin_name'] = $user['name'];
-                    $_SESSION['admin_role'] = 'admin';
-                    header("Location: admin/dashboard.php");
-                    exit();
-                } else {
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['user_name'] = $user['name'];
-                    $_SESSION['user_role'] = 'customer';
-                    
-                    if (isset($_GET['redirect']) && $_GET['redirect'] === 'checkout') {
-                        header("Location: checkout.php");
-                    } else {
-                        header("Location: my-account.php");
-                    }
-                    exit();
-                }
+            $ip = get_client_ip();
+            
+            // 1. Purge expired login attempts (> 15 minutes)
+            $stmt_purge = $pdo->prepare("DELETE FROM login_attempts WHERE attempt_time < NOW() - INTERVAL 15 MINUTE");
+            $stmt_purge->execute();
+            
+            // 2. Check if rate-limited (limit: 5 attempts per IP AND Email)
+            $stmt_count = $pdo->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip_address = ? AND email = ?");
+            $stmt_count->execute([$ip, $email]);
+            $failed_attempts = $stmt_count->fetchColumn();
+            
+            if ($failed_attempts >= 5) {
+                $login_error = "Too many failed login attempts. Account temporarily locked. Please try again after 15 minutes.";
             } else {
-                // Record failed login attempt for rate limiting
-                $stmt_fail = $pdo->prepare("INSERT INTO login_attempts (ip_address, email) VALUES (?, ?)");
-                $stmt_fail->execute([$ip, $email]);
-                
-                $login_error = "Invalid Email address or Password.";
+                // 3. Query User
+                $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND is_active = 1");
+                $stmt->execute([$email]);
+                $user = $stmt->fetch();
+
+                if ($user && password_verify($password, $user['password'])) {
+                    // Reset rate limiting attempts on success
+                    $stmt_reset = $pdo->prepare("DELETE FROM login_attempts WHERE ip_address = ? AND email = ?");
+                    $stmt_reset->execute([$ip, $email]);
+
+                    regenerate_session();
+
+                    if ($user['role'] === 'admin') {
+                        $_SESSION['admin_id'] = $user['id'];
+                        $_SESSION['admin_name'] = $user['name'];
+                        $_SESSION['admin_role'] = 'admin';
+                        header("Location: admin/dashboard.php");
+                        exit();
+                    } else {
+                        $_SESSION['user_id'] = $user['id'];
+                        $_SESSION['user_name'] = $user['name'];
+                        $_SESSION['user_role'] = 'customer';
+                        
+                        if (isset($_GET['redirect']) && $_GET['redirect'] === 'checkout') {
+                            header("Location: checkout.php");
+                        } else {
+                            header("Location: my-account.php");
+                        }
+                        exit();
+                    }
+                } else {
+                    // Record failed login attempt for rate limiting
+                    $stmt_fail = $pdo->prepare("INSERT INTO login_attempts (ip_address, email) VALUES (?, ?)");
+                    $stmt_fail->execute([$ip, $email]);
+                    
+                    $login_error = "Invalid Email address or Password.";
+                }
             }
         }
     }
@@ -107,6 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_btn'])) {
             <?php endif; ?>
 
             <form action="login.php<?php echo isset($_GET['redirect']) ? '?redirect=' . htmlspecialchars($_GET['redirect']) : ''; ?>" method="POST" style="margin-top: 10px;">
+                <?php echo csrf_field(); ?>
                 <div class="form-group" style="margin-bottom: 22px;">
                     <label for="email" style="font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px;">Email Address</label>
                     <input type="email" name="email" id="email" class="form-control" placeholder="e.g. yuvek@gmail.com" required style="border-radius: 8px; border-color: rgba(255,255,255,0.08); font-size: 0.95rem; height: auto; padding: 13px 16px;">

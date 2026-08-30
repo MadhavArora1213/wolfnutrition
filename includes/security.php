@@ -130,13 +130,8 @@ function sanitize_int($input) {
 // --------------------------------------------------------
 function secure_session_start() {
     if (session_status() === PHP_SESSION_NONE) {
-        // Secure session cookie settings
-        ini_set('session.cookie_httponly', 1);
-        ini_set('session.cookie_secure', 0);   // Set to 1 when HTTPS is live
-        ini_set('session.cookie_samesite', 'Strict');
-        ini_set('session.use_strict_mode', 1);
         ini_set('session.use_only_cookies', 1);
-        ini_set('session.use_trans_sid', 0);   // Prevent session ID in URL
+        ini_set('session.use_trans_sid', 0);
         session_start();
     }
 }

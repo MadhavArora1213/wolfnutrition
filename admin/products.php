@@ -51,16 +51,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_variant'])) {
     $price = (float)$_POST['price'];
     $sale_price = (float)$_POST['sale_price'];
     $stock = (int)$_POST['stock_qty'];
+    $is_default = isset($_POST['is_default']) ? 1 : 0;
 
     if ($price <= 0 || $sale_price <= 0 || $stock < 0) {
         $action_error = "Invalid variant input. Check prices and stock.";
     } else {
+        if ($is_default) {
+            $stmt_reset = $pdo->prepare("UPDATE product_variants SET is_default = 0 WHERE product_id = (SELECT product_id FROM product_variants WHERE id = ?)");
+            $stmt_reset->execute([$v_id]);
+        }
         $stmt_uv = $pdo->prepare("
             UPDATE product_variants 
-            SET price = ?, sale_price = ?, stock_qty = ? 
+            SET price = ?, sale_price = ?, stock_qty = ?, is_default = ? 
             WHERE id = ?
         ");
-        $stmt_uv->execute([$price, $sale_price, $stock, $v_id]);
+        $stmt_uv->execute([$price, $sale_price, $stock, $is_default, $v_id]);
         $action_msg = "Variant updated.";
     }
 }
@@ -295,6 +300,11 @@ $products = $stmt->fetchAll();
                                             <label style="font-size:0.7rem; color:rgba(255,255,255,0.45); display:block; margin-bottom:4px; font-weight:600;">Stock Qty</label>
                                             <input type="number" name="stock_qty" class="form-control" style="font-size:0.82rem; padding:7px 10px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:6px; color:#fff;" value="<?php echo $v['stock_qty']; ?>" required>
                                         </div>
+                                    </div>
+
+                                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                                        <input type="checkbox" name="is_default" value="1" <?php echo $v['is_default'] ? 'checked' : ''; ?> style="accent-color:#D4AF37; width:15px; height:15px;">
+                                        <span style="font-size:0.75rem; color:rgba(255,255,255,0.5);">Set as Default variant</span>
                                     </div>
 
                                     <button type="submit" name="update_variant" class="btn-gold" style="width:100%; padding:8px; font-size:0.78rem; border-radius:6px; font-weight:600;">

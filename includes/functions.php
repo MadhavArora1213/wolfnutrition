@@ -60,7 +60,7 @@ function add_to_cart($product_id, $variant_id, $qty = 1) {
 
     // Get product and variant details
     $stmt = $pdo->prepare("
-        SELECT p.name as p_name, p.image_url, pv.size_capsules, pv.sale_price, pv.price as mrp, pv.stock_qty 
+        SELECT p.name as p_name, p.image_url, p.shipping_charges, pv.size_capsules, pv.sale_price, pv.price as mrp, pv.stock_qty 
         FROM products p 
         JOIN product_variants pv ON p.id = pv.product_id 
         WHERE p.id = ? AND pv.id = ? AND p.is_active = 1
@@ -81,6 +81,7 @@ function add_to_cart($product_id, $variant_id, $qty = 1) {
 
     if (isset($_SESSION['cart'][$cart_key])) {
         $_SESSION['cart'][$cart_key]['qty'] += $qty;
+        $_SESSION['cart'][$cart_key]['shipping_charges'] = (float)$item['shipping_charges'];
     } else {
         $_SESSION['cart'][$cart_key] = [
             'type' => 'product',
@@ -92,7 +93,8 @@ function add_to_cart($product_id, $variant_id, $qty = 1) {
             'mrp' => (float)$item['mrp'],
             'image' => $item['image_url'],
             'qty' => $qty,
-            'max_stock' => $item['stock_qty']
+            'max_stock' => $item['stock_qty'],
+            'shipping_charges' => (float)$item['shipping_charges']
         ];
     }
     return true;
@@ -327,13 +329,22 @@ function get_cart_totals($payment_method = 'UPI') {
     $after_coupon_discount = $after_qty_discount - $coupon_discount;
     
     // 3. Shipping Fee Logic:
-    // Shipping is FREE if:
-    // - Subtotal after discounts is >= 999, OR
-    // - Payment method is prepaid (UPI or CARD)
-    $shipping = 99.00;
-    if ($after_coupon_discount >= 999.00 || $payment_method !== 'COD') {
-        $shipping = 0.00;
+    // Per-product shipping charges: sum all product shipping_charges
+    $product_shipping = 0;
+    foreach ($_SESSION['cart'] as $item) {
+        if ($item['type'] === 'product') {
+            $item_shipping = $item['shipping_charges'] ?? 0;
+            if ($item_shipping > 0) {
+                $product_shipping += $item_shipping * $item['qty'];
+            }
+        }
     }
+    // Flat shipping from platform: FREE if subtotal >= 999 or prepaid
+    $platform_shipping = 99.00;
+    if ($after_coupon_discount >= 999.00 || $payment_method !== 'COD') {
+        $platform_shipping = 0.00;
+    }
+    $shipping = $product_shipping + $platform_shipping;
     
     $total = $after_coupon_discount + $shipping;
     if ($total < 0) $total = 0;

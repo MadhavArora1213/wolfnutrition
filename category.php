@@ -257,7 +257,10 @@ if ($cat_slug === 'liver-detox') {
                                 <?php if($is_coming_soon): ?>
                                     <a href="product.php?slug=<?php echo $prod['slug']; ?>" class="btn-gold" style="width:100%; padding:11px; font-size:0.82rem; border-radius:12px; font-weight:700; text-align:center; text-decoration:none;"><i class="fas fa-eye"></i> View Details</a>
                                 <?php elseif($prod['total_stock']>0): ?>
-                                    <button class="btn-gold quick-add-btn" style="width:100%; padding:11px; font-size:0.82rem; border-radius:12px; font-weight:700;" data-product-id="<?php echo $prod['id']; ?>" data-variant-id="<?php echo $prod['default_variant_id']; ?>" data-csrf="<?php echo generate_csrf_token(); ?>"><i class="fas fa-shopping-cart"></i> Quick Add</button>
+                                    <div style="display:flex; gap:8px;">
+                                        <button class="btn-gold quick-add-btn" style="flex:1; padding:11px; font-size:0.82rem; border-radius:12px; font-weight:700;" data-product-id="<?php echo $prod['id']; ?>" data-variant-id="<?php echo $prod['default_variant_id']; ?>" data-csrf="<?php echo generate_csrf_token(); ?>"><i class="fas fa-shopping-cart"></i> Quick Add</button>
+                                        <button class="btn-gold buy-now-btn" style="flex:1; padding:11px; font-size:0.82rem; border-radius:12px; font-weight:700; background:linear-gradient(135deg,#b8860b,#D4AF37);" data-product-id="<?php echo $prod['id']; ?>" data-variant-id="<?php echo $prod['default_variant_id']; ?>" data-csrf="<?php echo generate_csrf_token(); ?>"><i class="fas fa-bolt"></i> Buy Now</button>
+                                    </div>
                                 <?php else: ?>
                                     <button class="btn-gold" style="width:100%; padding:11px; font-size:0.82rem; border-radius:12px; background:rgba(255,255,255,0.1); cursor:not-allowed; box-shadow:none; color:rgba(255,255,255,0.4);" disabled>Out of Stock</button>
                                 <?php endif; ?>

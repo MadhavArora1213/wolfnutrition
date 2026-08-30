@@ -233,6 +233,17 @@ if (empty($gallery)) $gallery = [$product['image_url']];
                 <?php endif; ?>
             </div>
 
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; font-size:0.88rem;">
+                <i class="fas fa-truck-fast" style="color:var(--gold-primary);"></i>
+                <?php if ($product['shipping_charges'] > 0): ?>
+                    <span style="color:rgba(255,255,255,0.6);">Shipping: <strong style="color:var(--gold-primary);">₹<?php echo number_format($product['shipping_charges'],0); ?></strong></span>
+                <?php else: ?>
+                    <span style="color:#2ecc71; font-weight:600;"><i class="fas fa-check-circle"></i> Free Shipping</span>
+                <?php endif; ?>
+                <span style="color:rgba(255,255,255,0.25);">|</span>
+                <span style="color:rgba(255,255,255,0.45);"><i class="fas fa-bolt" style="color:var(--gold-primary);"></i> Delivery in 3-5 days</span>
+            </div>
+
             <p class="pd-desc"><?php echo htmlspecialchars($product['short_description']); ?></p>
 
             <!-- Variants -->
@@ -274,9 +285,9 @@ if (empty($gallery)) $gallery = [$product['image_url']];
             <!-- Benefits -->
             <div class="pd-benefits">
                 <div class="pd-benefit"><i class="fas fa-leaf"></i> 100% Ayurvedic</div>
-                <div class="pd-benefit"><i class="fas fa-truck-fast"></i> Free Shipping</div>
                 <div class="pd-benefit"><i class="fas fa-shield-halved"></i> FSSAI Certified</div>
                 <div class="pd-benefit"><i class="fas fa-rotate-left"></i> Easy Returns</div>
+                <div class="pd-benefit"><i class="fas fa-headset"></i> Support 24/7</div>
             </div>
 
             <!-- Disclaimer -->
@@ -437,7 +448,7 @@ function showAddToCartToast(){
 
 // Add to Cart
 var csrfToken='<?php echo generate_csrf_token(); ?>';
-function addToCart(){var qty=document.getElementById('pd-qty-input').value;var fd=new URLSearchParams();fd.append('action','add');fd.append('product_id','<?php echo $product["id"];?>');fd.append('variant_id',currentVariantId);fd.append('quantity',qty);fd.append('csrf_token',csrfToken);fetch('cart_api.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:fd.toString()}).then(function(r){return r.json();}).then(function(d){if(d.success){showAddToCartToast();setTimeout(function(){location.reload();},1500);}else{alert(d.message||'Failed to add to cart');}});}
+function addToCart(){var qty=document.getElementById('pd-qty-input').value;var fd=new URLSearchParams();fd.append('action','add');fd.append('product_id','<?php echo $product["id"];?>');fd.append('variant_id',currentVariantId);fd.append('quantity',qty);fd.append('csrf_token',csrfToken);fetch('cart_api.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:fd.toString()}).then(function(r){return r.json();}).then(function(d){if(d.success){showAddToCartToast();setTimeout(function(){location.reload();},1500);}else if(d.login_required){window.location.href='login.php';}else{alert(d.message||'Failed to add to cart');}});}
 
 // Review Stars
 document.getElementById('review-stars').addEventListener('click',function(e){var star=e.target.closest('i');if(!star)return;var val=parseInt(star.dataset.value);document.getElementById('review-rating-input').value=val;this.querySelectorAll('i').forEach(function(s,i){s.classList.toggle('active',i<val);});});

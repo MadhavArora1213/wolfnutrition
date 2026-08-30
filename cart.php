@@ -103,6 +103,11 @@ $totals = get_cart_totals();
                                         <div class="cart-item-name"><?php echo htmlspecialchars($item['name']); ?></div>
                                         <div class="cart-item-size"><?php echo htmlspecialchars($item['size']); ?></div>
                                         <div class="cart-item-price">₹<?php echo number_format($item['price'], 2); ?></div>
+                                        <?php if ($item['type'] === 'product' && isset($item['shipping_charges']) && $item['shipping_charges'] > 0): ?>
+                                            <div style="font-size:0.75rem; color:rgba(255,255,255,0.45); margin-top:2px;"><i class="fas fa-truck" style="font-size:0.65rem;"></i> Shipping: ₹<?php echo number_format($item['shipping_charges'], 0); ?>/qty</div>
+                                        <?php elseif ($item['type'] === 'product'): ?>
+                                            <div style="font-size:0.75rem; color:#2ecc71; margin-top:2px;"><i class="fas fa-check-circle" style="font-size:0.65rem;"></i> Free Shipping</div>
+                                        <?php endif; ?>
                                         <button type="button" onclick="removeCartItem('<?php echo htmlspecialchars($key); ?>')" class="cart-item-remove">
                                             <i class="fas fa-trash-alt"></i> Remove
                                         </button>
@@ -146,8 +151,17 @@ $totals = get_cart_totals();
                         </div>
                     <?php endif; ?>
 
+                    <?php
+                    $product_shipping_total = 0;
+                    foreach ($cart_items as $item) {
+                        if ($item['type'] === 'product' && isset($item['shipping_charges']) && $item['shipping_charges'] > 0) {
+                            $product_shipping_total += $item['shipping_charges'] * $item['qty'];
+                        }
+                    }
+                    ?>
+
                     <div class="summary-line-item">
-                        <span>Estimated Shipping:</span>
+                        <span>Shipping:</span>
                         <span><?php echo $totals['shipping'] > 0 ? "₹" . number_format($totals['shipping'], 2) : "FREE"; ?></span>
                     </div>
 

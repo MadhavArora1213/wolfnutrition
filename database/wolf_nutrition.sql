@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS `products` (
   `how_to_use` TEXT NULL,
   `disclaimer` TEXT NULL,
   `is_active` TINYINT(1) DEFAULT 1,
+  `shipping_charges` DECIMAL(10,2) DEFAULT 0.00,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -262,14 +263,14 @@ CREATE TABLE IF NOT EXISTS `wishlist` (
 -- DATA SEEDING
 -- ========================================================
 
--- Seed Admin User (Password is 'admin123' hashed with bcrypt)
+-- Seed Admin User (Password: Admin@Wolf2026!)
 INSERT INTO `users` (`id`, `name`, `email`, `phone`, `password`, `role`, `is_active`) 
-VALUES (1, 'Admin Wolf', 'wolfnutritionwp@gmail.com', '9999999999', '$2y$10$wNMD5mX7m6aK9fV7cR.0beSg/5E3C7s5v1a.g60.aL/c9VqXyvKLu', 'admin', 1)
+VALUES (1, 'Admin Wolf', 'wolfnutritionwp@gmail.com', '9999999999', '$2y$10$KIHIKXLGyEesBlSEXGi7KOvShpQOycr7DqjHzkIU6GwQPcedTKQLa', 'admin', 1)
 ON DUPLICATE KEY UPDATE `email`=`email`;
 
--- Seed Customer (Password is 'customer123' hashed: $2y$10$vYqF2jJszkKux6g2gL3O2eF1Z0t4JkU1F1p9L7oZzU8rOqQ5iN6zG)
+-- Seed Customer (Password: Customer@Wolf2026!)
 INSERT INTO `users` (`id`, `name`, `email`, `phone`, `password`, `role`, `is_active`) 
-VALUES (2, 'Yuvek Verma', 'yuvek@gmail.com', '9876543210', '$2y$10$vYqF2jJszkKux6g2gL3O2eF1Z0t4JkU1F1p9L7oZzU8rOqQ5iN6zG', 'customer', 1)
+VALUES (2, 'Yuvek Verma', 'yuvek@gmail.com', '9876543210', '$2y$10$qTu7UNS95QJqY3umJNkoYOXxcq2KYYLsFwRGz89tbmaKrxqTHeW86', 'customer', 1)
 ON DUPLICATE KEY UPDATE `email`=`email`;
 
 -- Seed Categories
