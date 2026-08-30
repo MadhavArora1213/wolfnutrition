@@ -901,11 +901,18 @@ $address_count = count($addresses);
                                                     <span class="order-meta-value gold">₹<?php echo number_format($ord['total'], 2); ?></span>
                                                 </div>
                                             </div>
-                                            <span class="status-badge <?php 
-                                                echo ($ord['shipping_status'] === 'delivered') ? 'status-delivered' : (($ord['shipping_status'] === 'cancelled') ? 'status-cancelled' : 'status-pending'); 
-                                            ?>">
-                                                <?php echo htmlspecialchars($ord['shipping_status']); ?>
-                                            </span>
+                                            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                                                <span class="status-badge <?php 
+                                                    echo ($ord['payment_status'] === 'paid') ? 'status-delivered' : (($ord['payment_status'] === 'failed') ? 'status-cancelled' : 'status-pending'); 
+                                                ?>">
+                                                    <?php echo ucfirst(htmlspecialchars($ord['payment_status'])); ?>
+                                                </span>
+                                                <span class="status-badge <?php 
+                                                    echo ($ord['shipping_status'] === 'delivered') ? 'status-delivered' : (($ord['shipping_status'] === 'cancelled') ? 'status-cancelled' : 'status-pending'); 
+                                                ?>">
+                                                    <?php echo ucfirst(htmlspecialchars($ord['shipping_status'])); ?>
+                                                </span>
+                                            </div>
                                         </div>
 
                                         <!-- Items -->
