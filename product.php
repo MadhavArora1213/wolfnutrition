@@ -71,10 +71,18 @@ if (empty($gallery)) $gallery = [$product['image_url']];
 
 /* ── Variant Selector ── */
 .pd-variant-label{font-size:0.78rem; font-weight:700; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;}
-.pd-variants{display:flex; gap:10px; margin-bottom:24px;}
-.pd-variant{background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 20px; cursor:pointer; transition:all 0.3s; font-size:0.88rem; color:rgba(255,255,255,0.6); font-weight:600;}
-.pd-variant:hover{border-color:rgba(212,175,55,0.3); color:#fff;}
+.pd-variants{display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap;}
+.pd-variant{position:relative; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 20px; cursor:pointer; transition:all 0.3s; font-size:0.88rem; color:rgba(255,255,255,0.6); font-weight:600;}
+.pd-variant:hover:not(.oos){border-color:rgba(212,175,55,0.3); color:#fff;}
 .pd-variant.active{background:rgba(212,175,55,0.1); border-color:var(--gold-primary); color:var(--gold-primary);}
+.pd-variant.oos{opacity:0.4; cursor:not-allowed; text-decoration:line-through;}
+.pd-variant-oos-tag{position:absolute; top:-8px; right:-4px; background:#c0392b; color:#fff; font-size:0.55rem; font-weight:800; letter-spacing:0.5px; padding:2px 6px; border-radius:4px; text-transform:uppercase; text-decoration:none;}
+
+/* ── Out of Stock banner ── */
+.pd-oos-banner{display:flex; align-items:center; gap:16px; background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); border-radius:14px; padding:18px 22px; margin-bottom:20px;}
+.pd-oos-banner i{font-size:1.5rem; color:#e74c3c; flex-shrink:0;}
+.pd-oos-banner strong{display:block; color:#e74c3c; font-size:1rem; font-weight:800; margin-bottom:2px;}
+.pd-oos-banner span{font-size:0.84rem; color:rgba(255,255,255,0.5);}
 
 /* ── Quantity & Cart ── */
 .pd-actions{display:flex; gap:14px; margin-bottom:20px;}
@@ -87,6 +95,14 @@ if (empty($gallery)) $gallery = [$product['image_url']];
 .pd-benefits{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:20px 0; padding:18px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:14px;}
 .pd-benefit{display:flex; align-items:center; gap:8px; font-size:0.82rem; color:rgba(255,255,255,0.6);}
 .pd-benefit i{color:var(--gold-primary); font-size:0.85rem;}
+
+/* ── Benefits Tab Grid ── */
+.pd-benefits-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; padding:4px 0;}
+.pd-benefit-item{display:flex; align-items:flex-start; gap:12px; padding:14px 16px; background:rgba(255,255,255,0.02); border:1px solid rgba(212,175,55,0.08); border-radius:12px; transition:border-color 0.2s;}
+.pd-benefit-item:hover{border-color:rgba(212,175,55,0.2);}
+.pd-benefit-check{width:28px; height:28px; border-radius:50%; background:rgba(212,175,55,0.1); border:1px solid rgba(212,175,55,0.25); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px;}
+.pd-benefit-check i{color:var(--gold-primary); font-size:0.7rem;}
+.pd-benefit-item span{font-size:0.9rem; color:rgba(255,255,255,0.75); line-height:1.5;}
 
 /* ── Pincode ── */
 .pd-pincode{display:flex; gap:10px; margin-bottom:20px;}
@@ -153,6 +169,7 @@ if (empty($gallery)) $gallery = [$product['image_url']];
     .pd-actions{flex-direction:row;}
     .pd-qty{justify-content:center;}
     .pd-benefits{grid-template-columns:1fr;}
+    .pd-benefits-grid{grid-template-columns:1fr !important;}
     .pd-tab-nav{overflow-x:auto; -webkit-overflow-scrolling:touch;}
     .pd-tab-btn{padding:12px 16px; font-size:0.82rem;}
     .pd-disclaimer{flex-direction:row;}
@@ -249,9 +266,16 @@ if (empty($gallery)) $gallery = [$product['image_url']];
             <!-- Variants -->
             <div class="pd-variant-label">Select Pack Size</div>
             <div class="pd-variants">
-                <?php foreach ($variants as $v): ?>
-                    <div class="pd-variant <?php echo $v['id']==$default_variant['id']?'active':''; ?>" onclick="selectVariant(this,<?php echo $v['id']; ?>,<?php echo $v['sale_price']; ?>,<?php echo $v['price']; ?>)" data-vid="<?php echo $v['id']; ?>">
+                <?php foreach ($variants as $v): 
+                    $v_oos = ($v['stock_qty'] <= 0);
+                ?>
+                    <div class="pd-variant <?php echo $v['id']==$default_variant['id']?'active':''; ?> <?php echo $v_oos ? 'oos' : ''; ?>"
+                         onclick="<?php echo $v_oos ? 'void(0)' : "selectVariant(this,{$v['id']},{$v['sale_price']},{$v['price']})"; ?>"
+                         data-vid="<?php echo $v['id']; ?>"
+                         data-stock="<?php echo $v['stock_qty']; ?>"
+                         <?php echo $v_oos ? 'title="Out of Stock"' : ''; ?>>
                         <?php echo htmlspecialchars($v['size_capsules']); ?>
+                        <?php if ($v_oos): ?><span class="pd-variant-oos-tag">Out of Stock</span><?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -268,18 +292,33 @@ if (empty($gallery)) $gallery = [$product['image_url']];
                     </div>
                 </div>
             <?php else: ?>
-            <div class="pd-actions">
-                <div class="pd-qty">
+            <?php $ts = array_sum(array_column($variants,'stock_qty')); $default_oos = ($default_variant['stock_qty'] <= 0); ?>
+            <?php if ($ts <= 0): ?>
+                <!-- All variants out of stock — big banner -->
+                <div class="pd-oos-banner">
+                    <i class="fas fa-box-open"></i>
+                    <div>
+                        <strong>Out of Stock</strong>
+                        <span>This product is currently unavailable. Check back soon.</span>
+                    </div>
+                </div>
+            <?php else: ?>
+            <div class="pd-actions" id="pd-actions-wrap">
+                <div class="pd-qty" id="pd-qty-wrap">
                     <button type="button" onclick="changeQty(-1)">-</button>
                     <input type="text" id="pd-qty-input" value="1" readonly>
                     <button type="button" onclick="changeQty(1)">+</button>
                 </div>
-                <?php $ts=array_sum(array_column($variants,'stock_qty')); if($ts>0): ?>
-                    <button class="btn-gold" style="flex:1; border-radius:12px; font-size:0.95rem; font-weight:700;" onclick="addToCart()"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
-                <?php else: ?>
-                    <button style="flex:1; background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.4); border:none; border-radius:12px; font-size:0.95rem; font-weight:700; cursor:not-allowed;" disabled>Out of Stock</button>
-                <?php endif; ?>
+                <button class="btn-gold" id="pd-atc-btn" style="flex:1; border-radius:12px; font-size:0.95rem; font-weight:700;" onclick="addToCart()"
+                    <?php echo $default_oos ? 'disabled style="background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.35); cursor:not-allowed; box-shadow:none;"' : ''; ?>>
+                    <?php if ($default_oos): ?>
+                        <i class="fas fa-ban"></i> Out of Stock
+                    <?php else: ?>
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    <?php endif; ?>
+                </button>
             </div>
+            <?php endif; ?>
             <?php endif; ?>
 
             <!-- Benefits -->
@@ -309,7 +348,31 @@ if (empty($gallery)) $gallery = [$product['image_url']];
             <button class="pd-tab-btn" onclick="switchTab(this,'tab-usage')">How to Use</button>
         </div>
         <div id="tab-desc" class="pd-tab-pane active"><?php echo nl2br($product['description']); ?></div>
-        <div id="tab-benefits" class="pd-tab-pane"><?php echo nl2br($product['benefits']); ?></div>
+        <div id="tab-benefits" class="pd-tab-pane">
+            <?php
+            // Parse bullet lines into array
+            $benefit_lines = array_filter(array_map('trim', explode("\n", $product['benefits'])));
+            $benefit_items = [];
+            foreach ($benefit_lines as $line) {
+                // Strip leading bullet chars (•, -, *, â€¢)
+                $clean = preg_replace('/^[\•\-\*\â€¢\xe2\x80\xa2\xc2\xa7\u2022]+\s*/u', '', $line);
+                $clean = ltrim($clean, "\xe2\x80\xa2\xc2\xa7•-* ");
+                if (!empty($clean)) $benefit_items[] = html_entity_decode(htmlspecialchars_decode($clean), ENT_QUOTES, 'UTF-8');
+            }
+            if (!empty($benefit_items)):
+            ?>
+            <div class="pd-benefits-grid">
+                <?php foreach ($benefit_items as $bi): ?>
+                <div class="pd-benefit-item">
+                    <div class="pd-benefit-check"><i class="fas fa-check"></i></div>
+                    <span><?php echo htmlspecialchars($bi); ?></span>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php else: ?>
+                <?php echo nl2br(htmlspecialchars($product['benefits'])); ?>
+            <?php endif; ?>
+        </div>
         <div id="tab-ingred" class="pd-tab-pane"><?php echo nl2br($product['ingredients']); ?></div>
         <div id="tab-usage" class="pd-tab-pane"><?php echo nl2br($product['how_to_use']); ?></div>
     </div>
@@ -426,7 +489,29 @@ document.getElementById('main-product-image').addEventListener('mouseleave',func
 
 // Variant
 var currentVariantId=<?php echo $default_variant['id']; ?>;
-function selectVariant(el,vid,sale,mrp){document.querySelectorAll('.pd-variant').forEach(v=>v.classList.remove('active'));el.classList.add('active');currentVariantId=vid;document.getElementById('main-sale').textContent='₹'+Number(sale).toLocaleString('en-IN',{minimumFractionDigits:2});document.getElementById('main-mrp').textContent='MRP ₹'+Number(mrp).toLocaleString('en-IN',{minimumFractionDigits:2});}
+function selectVariant(el,vid,sale,mrp){
+    var stock=parseInt(el.dataset.stock)||0;
+    if(stock<=0) return; // don't select OOS variants
+    document.querySelectorAll('.pd-variant').forEach(v=>v.classList.remove('active'));
+    el.classList.add('active');
+    currentVariantId=vid;
+    document.getElementById('main-sale').textContent='₹'+Number(sale).toLocaleString('en-IN',{minimumFractionDigits:2});
+    document.getElementById('main-mrp').textContent='MRP ₹'+Number(mrp).toLocaleString('en-IN',{minimumFractionDigits:2});
+    // update button
+    var btn=document.getElementById('pd-atc-btn');
+    var qtyWrap=document.getElementById('pd-qty-wrap');
+    if(btn){
+        if(stock>0){
+            btn.disabled=false;
+            btn.style.cssText='';
+            btn.innerHTML='<i class="fas fa-shopping-cart"></i> Add to Cart';
+        } else {
+            btn.disabled=true;
+            btn.style.cssText='background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.35);cursor:not-allowed;box-shadow:none;flex:1;border-radius:12px;font-size:0.95rem;font-weight:700;';
+            btn.innerHTML='<i class="fas fa-ban"></i> Out of Stock';
+        }
+    }
+}
 
 // Qty
 function changeQty(d){var inp=document.getElementById('pd-qty-input');var v=parseInt(inp.value)+d;if(v>=1&&v<=10)inp.value=v;}

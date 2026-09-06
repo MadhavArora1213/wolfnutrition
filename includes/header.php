@@ -231,105 +231,185 @@ if ($active_page === 'product.php' && isset($_GET['slug'])) {
 <body>
 
 <script>
-// Mobile Menu
 document.addEventListener('DOMContentLoaded', function() {
-    var menuBtn = document.getElementById('mobileMenuBtn');
+
+    /* ── Mobile menu ── */
+    var menuBtn  = document.getElementById('mobileMenuBtn');
     var mobileNav = document.getElementById('mobileNav');
-    var overlay = document.getElementById('mobileOverlay');
+    var overlay  = document.getElementById('mobileOverlay');
     var closeBtn = document.getElementById('mobileCloseBtn');
 
-    function openMenu() {
+    function openMobile() {
         mobileNav.classList.add('open');
         overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
-    function closeMenu() {
+    function closeMobile() {
         mobileNav.classList.remove('open');
         overlay.classList.remove('active');
         document.body.style.overflow = '';
     }
+    if (menuBtn)  menuBtn.addEventListener('click', openMobile);
+    if (closeBtn) closeBtn.addEventListener('click', closeMobile);
+    if (overlay)  overlay.addEventListener('click', closeMobile);
+    document.querySelectorAll('.mobile-nav-links a').forEach(function(l){ l.addEventListener('click', closeMobile); });
 
-    if (menuBtn) menuBtn.addEventListener('click', openMenu);
-    if (closeBtn) closeBtn.addEventListener('click', closeMenu);
-    if (overlay) overlay.addEventListener('click', closeMenu);
+    /* ── SHOP mega menu ── */
+    var shopTrigger  = document.getElementById('shopTrigger');
+    var megaMenu     = document.getElementById('megaMenu');
+    var megaBackdrop = document.getElementById('megaBackdrop');
+    var isOpen       = false;
 
-    // Close on link click
-    var mobileLinks = document.querySelectorAll('.mobile-nav-links a');
-    mobileLinks.forEach(function(link) {
-        link.addEventListener('click', closeMenu);
+    function setMegaTop() {
+        if (!megaMenu) return;
+        var header = document.getElementById('mainHeader');
+        megaMenu.style.top = header.getBoundingClientRect().bottom + 'px';
+    }
+
+    // Pre-calculate on load so first click is instant
+    setMegaTop();
+
+    function openMega() {
+        isOpen = true;
+        setMegaTop();
+        megaMenu.classList.add('open');
+        megaBackdrop.classList.add('active');
+        shopTrigger.setAttribute('aria-expanded', 'true');
+        megaMenu.setAttribute('aria-hidden', 'false');
+        shopTrigger.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMega() {
+        isOpen = false;
+        megaMenu.classList.remove('open');
+        megaBackdrop.classList.remove('active');
+        shopTrigger.setAttribute('aria-expanded', 'false');
+        megaMenu.setAttribute('aria-hidden', 'true');
+        shopTrigger.classList.remove('is-open');
+        document.body.style.overflow = '';
+    }
+
+    if (shopTrigger) {
+        shopTrigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            isOpen ? closeMega() : openMega();
+        });
+    }
+    if (megaBackdrop) {
+        megaBackdrop.addEventListener('click', closeMega);
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isOpen) closeMega();
     });
+    document.querySelectorAll('.mega-menu a').forEach(function(l) {
+        l.addEventListener('click', closeMega);
+    });
+    window.addEventListener('scroll', function() {
+        if (isOpen) setMegaTop();
+    }, { passive: true });
 });
 </script>
 
-    <!-- Premium Announcement Bar -->
-    <div class="announcement-bar">
-        <div class="announcement-item active">
-            <a href="#"><i class="fas fa-truck-fast" style="color:var(--gold-primary);"></i> FREE Shipping on all prepaid orders — Limited time only!</a>
-        </div>
-        <div class="announcement-item">
-            <a href="#"><i class="fas fa-tags" style="color:var(--gold-primary);"></i> Wolfpack Combo Offer: Buy 2 products together, Save 10% automatically!</a>
-        </div>
-        <div class="announcement-item">
-            <a href="#"><i class="fas fa-leaf" style="color:var(--gold-primary);"></i> 100% Ayurvedic Sourced | FSSAI Certified | Veggie Capsules</a>
-        </div>
-    </div>
-
     <!-- Premium Navbar -->
     <header id="mainHeader">
-        <div class="container header-container">
-            <!-- Logo -->
-            <a href="index.php" class="logo" aria-label="Wolf Nutrition - Home">
-                <img src="assets/images/logo.png" alt="Wolf Nutrition - Premium Ayurvedic Supplements">
-                <div class="logo-text">WOLF <span>NUTRITION</span></div>
+        <div class="header-inner">
+
+            <!-- LEFT: SHOP trigger -->
+            <div class="header-left">
+                <button class="shop-trigger" id="shopTrigger" aria-expanded="false" aria-haspopup="true">
+                    <span class="shop-trigger-icon" id="shopTriggerIcon">
+                        <span></span><span></span><span></span>
+                    </span>
+                    <span class="shop-trigger-label">SHOP</span>
+                </button>
+            </div>
+
+            <!-- CENTER: Logo -->
+            <a href="index.php" class="logo-center" aria-label="Wolf Nutrition - Home">
+                <img src="assets/images/logo.png" alt="Wolf Nutrition">
+                <div class="logo-wordmark">WOLF <span>NUTRITION</span></div>
             </a>
 
-            <!-- Navigation (Desktop) -->
-            <nav class="desktop-nav">
-                <ul>
-                    <li class="<?php echo $active_page === 'index.php' ? 'active' : ''; ?>">
-                        <a href="index.php">Home</a>
-                    </li>
-                    <li class="<?php echo ($active_page === 'category.php' && isset($_GET['slug']) && $_GET['slug'] === 'vitality') ? 'active' : ''; ?>">
-                        <a href="category.php?slug=vitality">Supplements</a>
-                    </li>
-                    <li class="<?php echo ($active_page === 'category.php' && isset($_GET['slug']) && $_GET['slug'] === 'liver-detox') ? 'active' : ''; ?>">
-                        <a href="category.php?slug=liver-detox">Liver Support & Detox</a>
-                    </li>
-                    <li class="<?php echo $active_page === 'about.php' ? 'active' : ''; ?>">
-                        <a href="about.php">About Us</a>
-                    </li>
-                    <li class="<?php echo $active_page === 'contact.php' ? 'active' : ''; ?>">
-                        <a href="contact.php">Contact</a>
-                    </li>
-                </ul>
-            </nav>
-
-            <!-- Right Actions -->
-            <div class="header-actions">
-                <button class="header-icon search-trigger" aria-label="Search">
+            <!-- RIGHT: Icons -->
+            <div class="header-right">
+                <button class="nav-icon search-trigger" aria-label="Search">
                     <i class="fas fa-search"></i>
-                    <span class="icon-label">Search</span>
                 </button>
-                <a href="<?php echo is_logged_in() ? 'my-account.php' : 'login.php'; ?>" class="header-icon" aria-label="Account">
-                    <i class="fas fa-user-circle"></i>
-                    <?php if (is_logged_in()): ?>
-                        <span class="logged-dot"></span>
-                    <?php endif; ?>
-                    <span class="icon-label"><?php echo is_logged_in() ? 'Account' : 'Login'; ?></span>
+                <a href="<?php echo is_logged_in() ? 'my-account.php' : 'login.php'; ?>" class="nav-icon" aria-label="<?php echo is_logged_in() ? 'My Account' : 'Login'; ?>">
+                    <i class="fas fa-user"></i>
+                    <?php if (is_logged_in()): ?><span class="nav-icon-dot"></span><?php endif; ?>
                 </a>
-                <button class="header-icon cart-drawer-trigger" aria-label="Cart">
-                    <i class="fas fa-shopping-bag"></i>
+                <button class="nav-icon cart-drawer-trigger" aria-label="Cart">
+                    <i class="fas fa-bag-shopping"></i>
                     <span class="cart-badge" style="<?php echo $cart_count > 0 ? 'display:flex;' : 'display:none;'; ?>">
                         <?php echo $cart_count; ?>
                     </span>
-                    <span class="icon-label">Cart</span>
                 </button>
                 <!-- Mobile Menu Toggle -->
-                <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="Menu">
+                <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="Open menu">
                     <span></span><span></span><span></span>
                 </button>
             </div>
+
         </div>
+
+        <!-- MEGA MENU PANEL -->
+        <div class="mega-menu" id="megaMenu" aria-hidden="true">
+            <div class="mega-menu-inner">
+
+                <!-- Left: Main nav links -->
+                <div class="mega-col mega-col-categories">
+                    <p class="mega-featured-label">Browse</p>
+                    <ul class="mega-category-list">
+                        <li class="<?php echo ($active_page === 'category.php' && isset($_GET['slug']) && $_GET['slug'] === 'vitality') ? 'mega-active' : ''; ?>">
+                            <a href="category.php?slug=vitality">Supplements</a>
+                        </li>
+                        <li class="<?php echo ($active_page === 'category.php' && isset($_GET['slug']) && $_GET['slug'] === 'liver-detox') ? 'mega-active' : ''; ?>">
+                            <a href="category.php?slug=liver-detox">Liver Support &amp; Detox</a>
+                        </li>
+                        <li class="<?php echo $active_page === 'about.php' ? 'mega-active' : ''; ?>">
+                            <a href="about.php">About Us</a>
+                        </li>
+                        <li class="<?php echo $active_page === 'contact.php' ? 'mega-active' : ''; ?>">
+                            <a href="contact.php">Contact</a>
+                        </li>
+                        <li class="<?php echo $active_page === 'blog.php' ? 'mega-active' : ''; ?>">
+                            <a href="blog.php">Wellness Blog</a>
+                        </li>
+                        <li class="<?php echo $active_page === 'certificates.php' ? 'mega-active' : ''; ?>">
+                            <a href="certificates.php">Certifications</a>
+                        </li>
+                        <li class="mega-shop-all"><a href="category.php?slug=vitality">Shop All</a></li>
+                    </ul>
+                </div>
+
+                <!-- Divider -->
+                <div class="mega-divider"></div>
+
+                <!-- Middle: Product quick links -->
+                <div class="mega-col mega-col-links">
+                    <p class="mega-featured-label">Our Products</p>
+                    <ul class="mega-quick-links">
+                        <li><a href="product.php?slug=wolfpack-unleash-the-alpha-within">Wolfpack — Vitality Stack</a></li>
+                        <li><a href="product.php?slug=wolftox-liver-support-detox">Wolftox — Liver Detox</a></li>
+                        <li><a href="category.php?slug=vitality">Best Sellers</a></li>
+                        <li><a href="category.php?slug=liver-detox">Liver Support</a></li>
+                    </ul>
+                </div>
+
+                <!-- Right: Feature banner -->
+                <div class="mega-col mega-col-banner">
+                    <a href="category.php?slug=vitality" class="mega-banner-card">
+                        <img src="assets/images/products/wolfpack_shoot.png" alt="Shop Bestsellers">
+                        <span class="mega-banner-cta">Shop Bestsellers</span>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+        <!-- Mega menu backdrop -->
+        <div class="mega-backdrop" id="megaBackdrop"></div>
+
     </header>
 
     <!-- Mobile Menu -->

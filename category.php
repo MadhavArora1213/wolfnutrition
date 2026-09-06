@@ -53,7 +53,7 @@ if ($cat_slug === 'liver-detox') {
 #goldParticles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.3;}
 
 /* ── Hero ── */
-.cat-hero{position:relative;padding:70px 60px;border-radius:24px;margin-top:20px;margin-bottom:50px;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:40px;min-height:320px;background:linear-gradient(135deg,rgba(212,175,55,0.08) 0%,#080C10 50%,rgba(212,175,55,0.05) 100%);border:1px solid rgba(212,175,55,0.12);box-shadow:0 25px 60px rgba(8,12,16,0.6);}
+.cat-hero{position:relative;padding:50px 60px 50px;border-radius:24px;margin-top:30px;margin-bottom:50px;overflow:visible;display:flex;align-items:center;justify-content:space-between;gap:40px;min-height:400px;background:linear-gradient(135deg,rgba(212,175,55,0.08) 0%,#080C10 50%,rgba(212,175,55,0.05) 100%);border:1px solid rgba(212,175,55,0.12);box-shadow:0 25px 60px rgba(8,12,16,0.6);}
 .cat-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:300px;height:300px;background:radial-gradient(circle,rgba(212,175,55,0.1) 0%,transparent 70%);pointer-events:none;}
 .cat-hero::after{content:'';position:absolute;bottom:-60px;left:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(212,175,55,0.08) 0%,transparent 70%);pointer-events:none;}
 .cat-hero-badge{display:inline-block;font-size:0.68rem;font-weight:800;letter-spacing:2.5px;background:var(--gold-gradient);color:#080C10;padding:6px 18px;border-radius:20px;text-transform:uppercase;margin-bottom:16px;}
@@ -63,9 +63,9 @@ if ($cat_slug === 'liver-detox') {
 .cat-hero-stat{text-align:center;padding:14px 20px;background:rgba(255,255,255,0.04);border:1px solid rgba(212,175,55,0.12);border-radius:14px;min-width:85px;}
 .cat-hero-stat-num{font-size:1.3rem;font-weight:800;color:var(--gold-primary);font-family:var(--font-heading);line-height:1;}
 .cat-hero-stat-label{font-size:0.6rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;margin-top:4px;font-weight:600;}
-.cat-hero-visual{position:relative;width:260px;height:260px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.cat-hero-visual::before{content:'';position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,var(--gold-primary) 0%,transparent 70%);opacity:0.1;filter:blur(30px);z-index:1;}
-.cat-hero-visual img{height:100%;max-height:240px;object-fit:contain;z-index:2;filter:drop-shadow(0 20px 40px rgba(8,12,16,0.7));animation:catFloat 5s ease-in-out infinite;mix-blend-mode:multiply;}
+.cat-hero-visual{position:relative;width:320px;height:420px;display:flex;align-items:flex-end;justify-content:center;flex-shrink:0;margin-top:-60px;}
+.cat-hero-visual::before{content:'';position:absolute;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,var(--gold-primary) 0%,transparent 70%);opacity:0.1;filter:blur(30px);z-index:1;}
+.cat-hero-visual img{width:85%;height:auto;max-height:400px;object-fit:contain;z-index:2;filter:drop-shadow(0 20px 40px rgba(8,12,16,0.7));animation:catFloat 5s ease-in-out infinite;}
 @keyframes catFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-12px) rotate(1.5deg)}}
 
 /* ── Benefits ── */
@@ -82,6 +82,7 @@ if ($cat_slug === 'liver-detox') {
 .filter-sidebar h3{font-size:1.1rem;text-transform:uppercase;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06);font-family:var(--font-heading);font-weight:800;color:#fff;}
 .filter-label{display:block;font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:7px;}
 .filter-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;color:#fff;font-size:0.9rem;outline:none;transition:border-color 0.25s;font-family:var(--font-body);}
+.filter-input option{background:#1a1b20;color:#fff;}
 .filter-input:focus{border-color:rgba(212,175,55,0.4);box-shadow:0 0 0 3px rgba(212,175,55,0.08);}
 .filter-input::placeholder{color:var(--text-muted);}
 .filter-check{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.88rem;color:rgba(255,255,255,0.6);margin:18px 0;}
@@ -128,8 +129,8 @@ if ($cat_slug === 'liver-detox') {
     .cat-hero-stat{padding:10px 14px;min-width:70px;}
     .cat-hero-stat-num{font-size:1.1rem;}
     .cat-hero-stat-label{font-size:0.52rem;}
-    .cat-hero-visual{width:140px;height:140px;}
-    .cat-hero-visual img{max-height:130px;}
+    .cat-hero-visual{width:180px;height:200px;}
+    .cat-hero-visual img{max-height:190px;}
     .cat-benefits{grid-template-columns:1fr !important;gap:12px;margin-bottom:24px;}
     .cat-benefit{padding:16px 14px;gap:12px;}
     .cat-benefit-icon{width:38px;height:38px;font-size:0.9rem;border-radius:10px;}
@@ -246,10 +247,13 @@ if ($cat_slug === 'liver-detox') {
                                 <a href="product.php?slug=<?php echo $prod['slug']; ?>" style="text-decoration:none;">
                                     <h3 style="font-size:1rem; color:#fff; margin-bottom:8px; font-family:var(--font-heading); font-weight:700; line-height:1.3;"><?php echo htmlspecialchars($prod['name']); ?></h3>
                                 </a>
-                                <div style="display:flex; align-items:center; gap:6px; margin-bottom:12px;">
+                                <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
                                     <?php for($s=1;$s<=5;$s++):?><i class="<?php echo $s<=round($ar)?'fas':'far';?> fa-star" style="color:var(--gold-light); font-size:0.75rem;"></i><?php endfor;?>
                                     <span style="font-size:0.75rem; color:rgba(255,255,255,0.4);">(<?php echo $ri['cnt']; ?>)</span>
                                 </div>
+                                <?php if(!empty($prod['short_description'])): ?>
+                                <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); line-height:1.55; margin-bottom:12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;"><?php echo htmlspecialchars($prod['short_description']); ?></p>
+                                <?php endif; ?>
                                 <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:16px;">
                                     <span style="font-size:1.25rem; font-weight:800; color:var(--gold-primary); font-family:var(--font-heading);">₹<?php echo number_format($prod['min_price'],2); ?></span>
                                     <span style="font-size:0.82rem; color:rgba(255,255,255,0.35); text-decoration:line-through;">MRP ₹<?php echo number_format($prod['max_mrp'],2); ?></span>

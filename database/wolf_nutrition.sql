@@ -268,6 +268,11 @@ INSERT INTO `users` (`id`, `name`, `email`, `phone`, `password`, `role`, `is_act
 VALUES (1, 'Admin Wolf', 'wolfnutritionwp@gmail.com', '9999999999', '$2y$10$KIHIKXLGyEesBlSEXGi7KOvShpQOycr7DqjHzkIU6GwQPcedTKQLa', 'admin', 1)
 ON DUPLICATE KEY UPDATE `email`=`email`;
 
+-- Seed Admin 2 (Password: Admin@2026!)
+INSERT INTO `users` (`id`, `name`, `email`, `phone`, `password`, `role`, `is_active`) 
+VALUES (3, 'Admin Two', 'admin@wolfnutrition.in', '8888888888', '$2y$10$Ipjh8kM1cb/GGLXlKSv8l.kkDDYoKYh7JK5gPOJ7FNvQ4AB1bnSCa', 'admin', 1)
+ON DUPLICATE KEY UPDATE `email`=`email`;
+
 -- Seed Customer (Password: Customer@Wolf2026!)
 INSERT INTO `users` (`id`, `name`, `email`, `phone`, `password`, `role`, `is_active`) 
 VALUES (2, 'Yuvek Verma', 'yuvek@gmail.com', '9876543210', '$2y$10$qTu7UNS95QJqY3umJNkoYOXxcq2KYYLsFwRGz89tbmaKrxqTHeW86', 'customer', 1)

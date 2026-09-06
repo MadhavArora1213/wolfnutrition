@@ -4,10 +4,18 @@ try { $stmt = $pdo->prepare("SELECT * FROM categories WHERE is_active = 1 ORDER 
 $categories = [];
 $products_by_category = [];
 foreach ($all_categories as $cat) {
-    $stmt = $pdo->prepare("SELECT p.*, pv.price as max_mrp, pv.sale_price as min_price, pv.id as default_variant_id FROM products p JOIN product_variants pv ON p.id = pv.product_id WHERE p.category_id = ? AND p.is_active = 1 AND pv.is_default = 1 GROUP BY p.id");
+    $stmt = $pdo->prepare("SELECT p.*, pv.price as max_mrp, pv.sale_price as min_price, pv.id as default_variant_id, (SELECT SUM(pv2.stock_qty) FROM product_variants pv2 WHERE pv2.product_id = p.id) as total_stock FROM products p JOIN product_variants pv ON p.id = pv.product_id WHERE p.category_id = ? AND p.is_active = 1 AND pv.is_default = 1 GROUP BY p.id");
     $stmt->execute([$cat['id']]); $products_by_category[$cat['slug']] = $stmt->fetchAll();
     if (!empty($products_by_category[$cat['slug']])) { $categories[] = $cat; }
 }
+// Fetch all variants for every product (for card dropdowns)
+$all_product_variants = [];
+try {
+    $sv = $pdo->query("SELECT id, product_id, size_capsules, sale_price, price, stock_qty, is_default FROM product_variants ORDER BY product_id ASC, is_default DESC, price ASC");
+    foreach ($sv->fetchAll() as $v) {
+        $all_product_variants[$v['product_id']][] = $v;
+    }
+} catch (PDOException $e) { $all_product_variants = []; }
 try { $stmt = $pdo->prepare("SELECT * FROM bundles WHERE status = 1 LIMIT 1"); $stmt->execute(); $bundle = $stmt->fetch(); } catch (PDOException $e) { $bundle = null; }
 $certs = get_certificates();
 $testimonials = get_testimonials(false, 5);
@@ -63,6 +71,12 @@ try { $stmt = $pdo->prepare("SELECT p.*, pv.id as variant_id, pv.price as max_mr
     .hero-mobile-content p{font-size:0.8rem;}
     .hero-mobile-banner{padding:35px 20px;}
 }
+
+/* ── Card Variant Select ── */
+.card-variant-select { color-scheme: dark; }
+.card-variant-select option { background:#1a1b20; color:#fff; }
+.card-variant-select:focus { border-color:rgba(212,175,55,0.5) !important; outline:none; }
+.card-variant-select:hover { border-color:rgba(212,175,55,0.4) !important; }
 
 /* ── Coming Soon Grid ── */
 .coming-soon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;max-width:1100px;margin:0 auto;}
@@ -257,92 +271,75 @@ try { $stmt = $pdo->prepare("SELECT p.*, pv.id as variant_id, pv.price as max_mr
     </div>
 </div>
 
-<!-- ═══ CATEGORIES ═══ -->
-<section style="padding:70px 0; position:relative; z-index:2; background:radial-gradient(ellipse at 50% 50%,rgba(212,175,55,0.03) 0%,transparent 60%);">
+<!-- ═══ SHOP BY GOAL ═══ -->
+<!-- ═══ SHOP BY GOAL ═══ -->
+<section style="padding:70px 0 80px; position:relative; z-index:2;">
     <div class="container">
+
         <!-- Section Header -->
         <div style="text-align:center; margin-bottom:50px;">
-            <span style="display:inline-block; font-size:0.65rem; font-weight:800; letter-spacing:2.5px; color:var(--gold-primary); text-transform:uppercase; margin-bottom:12px; background:rgba(212,175,55,0.06); border:1px solid rgba(212,175,55,0.12); padding:5px 16px; border-radius:20px;">Our Ranges</span>
-            <div style="font-size:clamp(1.8rem,4vw,2.8rem); font-family:var(--font-heading); font-weight:800; color:#fff; text-transform:uppercase; margin-bottom:10px;">Shop By Health Need</div>
-            <p style="font-size:0.95rem; color:rgba(255,255,255,0.5); max-width:500px; margin:0 auto;">Choose your targeted wellness solution and start your transformation.</p>
+            <span style="display:inline-block;font-size:0.65rem;font-weight:800;letter-spacing:2.5px;color:var(--gold-primary);text-transform:uppercase;margin-bottom:12px;background:rgba(212,175,55,0.06);border:1px solid rgba(212,175,55,0.12);padding:5px 16px;border-radius:20px;">Performance Stacks</span>
+            <h2 style="font-size:clamp(1.8rem,4vw,2.8rem);font-family:var(--font-heading);font-weight:800;color:#fff;text-transform:uppercase;margin-bottom:10px;">
+                Shop By <span style="background:var(--gold-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Goal</span>
+            </h2>
+            <p style="font-size:0.9rem;color:rgba(255,255,255,0.5);max-width:400px;margin:0 auto;">Ayurvedic. FSSAI Certified. Built for real results.</p>
         </div>
 
-        <!-- Category Cards - Horizontal Layout -->
-        <div class="cat-card-grid" style="display:flex; flex-direction:column; gap:20px;">
+        <!-- Cards Row -->
+        <div class="goal-cards-row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;">
 
-            <!-- Vitality - Image Left -->
-            <a href="category.php?slug=vitality" class="tilt-card" style="display:grid; grid-template-columns:auto 1fr; text-decoration:none; background:rgba(255,255,255,0.02); border:1px solid rgba(212,175,55,0.1); border-radius:24px; overflow:hidden; transition:all 0.4s; position:relative;">
-                <!-- Image Side -->
-                <div class="cat-card-img" style="width:320px; min-height:220px; background:linear-gradient(135deg,rgba(212,175,55,0.1) 0%,rgba(8,12,16,0.95) 100%); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
-                    <div style="position:absolute; top:0; right:0; width:120px; height:120px; background:radial-gradient(circle,rgba(212,175,55,0.15) 0%,transparent 70%); pointer-events:none;"></div>
-                    <img src="assets/images/products/wolfpack.png" alt="Wolfpack Vitality Capsules - Himalayan Shilajit Ashwagandha Gokshura" style="height:180px; object-fit:contain; filter:drop-shadow(0 20px 40px rgba(8,12,16,0.6)); transition:transform 0.5s ease; position:relative; z-index:2;">
-                </div>
-                <!-- Content Side -->
-                <div class="cat-card-content" style="padding:35px 40px; display:flex; flex-direction:column; justify-content:center; position:relative;">
-                    <div style="position:absolute; top:20px; right:20px; background:var(--gold-gradient); color:#080C10; font-size:0.6rem; font-weight:800; padding:4px 12px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px;">Best Seller</div>
-                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.15); display:flex; align-items:center; justify-content:center; color:var(--gold-primary); font-size:1.1rem; margin-bottom:16px;"><i class="fas fa-fire"></i></div>
-                    <h3 style="color:#fff; font-family:var(--font-heading); font-size:1.5rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 8px;">Vitality Stack</h3>
-                    <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; line-height:1.6; margin:0 0 20px; max-width:450px;">Premium Himalayan Shilajit, Ashwagandha, and Gokshura. Formulated for peak testosterone, endurance, and raw physical performance.</p>
-                    <div style="display:flex; align-items:center; gap:20px;">
-                        <span style="display:inline-flex; align-items:center; gap:8px; color:var(--gold-primary); font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Explore Stack <i class="fas fa-arrow-right"></i></span>
-                        <span style="font-size:0.78rem; color:rgba(255,255,255,0.35);">From ₹1,194</span>
-                    </div>
+            <!-- Vitality Stack -->
+            <a href="category.php?slug=vitality" class="goal-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;position:relative;">
+                <div style="position:absolute;top:0;right:10px;background:var(--gold-gradient);color:#080C10;font-size:0.55rem;font-weight:800;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:1px;z-index:2;">Best Seller</div>
+                <img src="assets/images/products/wolfpack.png" alt="Wolfpack Vitality Stack" style="width:70%;object-fit:contain;filter:drop-shadow(0 20px 50px rgba(212,175,55,0.2));transition:transform 0.4s ease;">
+                <div style="width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.35),transparent);margin:18px 0;"></div>
+                <div style="text-align:center;">
+                    <div style="font-family:var(--font-heading);font-weight:800;font-size:1.05rem;color:#fff;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Vitality Stack</div>
+                    <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);margin-bottom:8px;">Shilajit · Ashwagandha · Gokshura</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:12px;max-width:260px;margin-left:auto;margin-right:auto;">Boost testosterone, stamina & raw performance with pure Himalayan botanicals.</div>
+                    <span style="display:inline-flex;align-items:center;gap:5px;color:var(--gold-primary);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Explore <i class="fas fa-arrow-right" style="font-size:0.6rem;"></i></span>
                 </div>
             </a>
 
-            <!-- Liver Detox - Image Right -->
-            <a href="category.php?slug=liver-detox" class="tilt-card" style="display:grid; grid-template-columns:1fr auto; text-decoration:none; background:rgba(255,255,255,0.02); border:1px solid rgba(212,175,55,0.1); border-radius:24px; overflow:hidden; transition:all 0.4s; position:relative;">
-                <!-- Content Side -->
-                <div class="cat-card-content" style="padding:35px 40px; display:flex; flex-direction:column; justify-content:center; position:relative;">
-                    <div style="width:44px; height:44px; border-radius:12px; background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.15); display:flex; align-items:center; justify-content:center; color:var(--gold-primary); font-size:1.1rem; margin-bottom:16px;"><i class="fas fa-shield-halved"></i></div>
-                    <h3 style="color:#fff; font-family:var(--font-heading); font-size:1.5rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 8px;">Liver Support & Detox Stack</h3>
-                    <p style="color:rgba(255,255,255,0.55); font-size:0.9rem; line-height:1.6; margin:0 0 20px; max-width:450px;">Kutki, Milk Thistle, and Kalmegh. Complete liver cleanse, toxin removal, and digestive enzyme optimization.</p>
-                    <div style="display:flex; align-items:center; gap:20px;">
-                        <span style="display:inline-flex; align-items:center; gap:8px; color:var(--gold-primary); font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Explore Stack <i class="fas fa-arrow-right"></i></span>
-                        <span style="font-size:0.78rem; color:rgba(255,255,255,0.35);">From ₹1,275</span>
-                    </div>
-                </div>
-                <!-- Image Side -->
-                <div class="cat-card-img" style="width:320px; min-height:220px; background:linear-gradient(135deg,rgba(8,12,16,0.95) 0%,rgba(212,175,55,0.1) 100%); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
-                    <div style="position:absolute; top:0; left:0; width:120px; height:120px; background:radial-gradient(circle,rgba(212,175,55,0.15) 0%,transparent 70%); pointer-events:none;"></div>
-                    <img src="assets/images/products/wolftox.png" alt="WolfTox Liver Support Detox Capsules - Kutki Milk Thistle" style="height:180px; object-fit:contain; filter:drop-shadow(0 20px 40px rgba(8,12,16,0.6)); transition:transform 0.5s ease; position:relative; z-index:2;">
+            <!-- Liver Detox -->
+            <a href="category.php?slug=liver-detox" class="goal-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;">
+                <img src="assets/images/products/wolftox.png" alt="Wolftox Liver Detox" style="width:70%;object-fit:contain;filter:drop-shadow(0 20px 50px rgba(212,175,55,0.2));transition:transform 0.4s ease;">
+                <div style="width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.35),transparent);margin:18px 0;"></div>
+                <div style="text-align:center;">
+                    <div style="font-family:var(--font-heading);font-weight:800;font-size:1.05rem;color:#fff;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Liver Detox</div>
+                    <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);margin-bottom:8px;">Kutki · Milk Thistle · Kalmegh</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:12px;max-width:260px;margin-left:auto;margin-right:auto;">Cleanse toxins, restore liver enzymes & protect your gut naturally.</div>
+                    <span style="display:inline-flex;align-items:center;gap:5px;color:var(--gold-primary);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Explore <i class="fas fa-arrow-right" style="font-size:0.6rem;"></i></span>
                 </div>
             </a>
 
-            <!-- Combo - Image Center -->
-            <a href="category.php?slug=all" class="tilt-card" style="display:block; text-decoration:none; background:linear-gradient(135deg,rgba(212,175,55,0.06) 0%,rgba(8,12,16,0.95) 50%,rgba(212,175,55,0.04) 100%); border:1px solid rgba(212,175,55,0.15); border-radius:24px; overflow:hidden; transition:all 0.4s; position:relative;">
-                <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--gold-gradient);"></div>
-                <div class="combo-card-inner" style="display:grid; grid-template-columns:1fr auto 1fr; gap:30px; align-items:center; padding:40px;">
-                    <!-- Left Text -->
-                    <div class="combo-card-left" style="text-align:right;">
-                        <h3 style="color:#fff; font-family:var(--font-heading); font-size:1.3rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 6px;">WOLFPACK</h3>
-                        <p style="color:rgba(255,255,255,0.45); font-size:0.82rem; margin:0;">Vitality + Strength</p>
-                    </div>
-                    <!-- Center Image -->
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <img src="assets/images/products/wolfpack.png" alt="Wolfpack Vitality Capsules" style="height:120px; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
-                        <div style="width:40px; height:40px; border-radius:50%; background:var(--gold-gradient); display:flex; align-items:center; justify-content:center; color:#080C10; font-size:1.2rem; font-weight:800; flex-shrink:0;">+</div>
-                        <img src="assets/images/products/wolftox.png" alt="WolfTox Liver Detox Capsules" style="height:120px; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
-                    </div>
-                    <!-- Right Text -->
-                    <div class="combo-card-right">
-                        <h3 style="color:#fff; font-family:var(--font-heading); font-size:1.3rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; margin:0 0 6px;">WOLFTOX</h3>
-                        <p style="color:rgba(255,255,255,0.45); font-size:0.82rem; margin:0;">Detox + Cleanse</p>
-                    </div>
+            <!-- Bundle -->
+            <a href="category.php?slug=all" class="goal-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;position:relative;">
+                <div style="position:absolute;top:0;left:10px;background:rgba(212,175,55,0.15);border:1px solid rgba(212,175,55,0.35);color:var(--gold-primary);font-size:0.55rem;font-weight:800;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:1px;z-index:2;">Save 10%</div>
+                <div style="width:80%;display:flex;align-items:flex-end;justify-content:center;">
+                    <img src="assets/images/products/wolfpack.png" alt="Wolfpack" style="width:48%;object-fit:contain;filter:drop-shadow(0 16px 40px rgba(212,175,55,0.15));transition:transform 0.4s ease;transform:rotate(-5deg) translateX(10px);">
+                    <img src="assets/images/products/wolftox.png" alt="Wolftox" style="width:44%;object-fit:contain;filter:drop-shadow(0 16px 40px rgba(212,175,55,0.15));transition:transform 0.4s ease;transform:rotate(5deg) translateX(-10px);">
                 </div>
-                <!-- Bottom CTA -->
-                <div class="combo-card-bottom" style="padding:0 40px 30px; display:flex; justify-content:space-between; align-items:center;">
-                    <span style="display:inline-flex; align-items:center; gap:8px; color:var(--gold-primary); font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">View All Combos <i class="fas fa-arrow-right"></i></span>
-                    <div style="text-align:right;">
-                        <span style="font-size:0.75rem; color:rgba(255,255,255,0.35); text-decoration:line-through; margin-right:6px;">₹2,998</span>
-                        <span style="font-size:1.3rem; font-weight:800; color:var(--gold-primary); font-family:var(--font-heading);">₹2,699</span>
+                <div style="width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.35),transparent);margin:18px 0;"></div>
+                <div style="text-align:center;">
+                    <div style="font-family:var(--font-heading);font-weight:800;font-size:1.05rem;color:#fff;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Complete Bundle</div>
+                    <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);margin-bottom:8px;">
+                        <span style="text-decoration:line-through;margin-right:5px;">₹2,998</span>
+                        <span style="color:var(--gold-primary);font-weight:700;">₹2,699</span>
                     </div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:12px;max-width:260px;margin-left:auto;margin-right:auto;">Vitality + liver protection in one pack. Save 10% when you stack both.</div>
+                    <span style="display:inline-flex;align-items:center;gap:5px;color:var(--gold-primary);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Shop Bundle <i class="fas fa-arrow-right" style="font-size:0.6rem;"></i></span>
                 </div>
             </a>
 
         </div>
     </div>
 </section>
+
+<style>
+.goal-card:hover img { transform: translateY(-12px) scale(1.04) !important; }
+@media(max-width:750px) { .goal-cards-row { grid-template-columns: 1fr !important; gap:20px !important; } }
+</style>
 
 <!-- Divider -->
 <div class="divider-wave"><svg viewBox="0 0 1200 50" preserveAspectRatio="none"><path d="M0,25 Q300,50 600,25 Q900,0 1200,25 L1200,50 L0,50 Z" fill="rgba(212,175,55,0.03)"/></svg></div>
@@ -389,6 +386,7 @@ try { $stmt = $pdo->prepare("SELECT p.*, pv.id as variant_id, pv.price as max_mr
                     ?>
                         <div class="product-card glass-card tilt-card spotlight-card" style="background:rgba(255,255,255,0.03); border:1px solid rgba(212,175,55,0.08); border-radius:20px; overflow:hidden;">
                             <?php if($dp>0): ?><span class="badge-discount">-<?php echo $dp; ?>% OFF</span><?php endif; ?>
+                            <?php if(($prod['total_stock'] ?? 1) <= 0): ?><span class="badge-soldout">Sold Out</span><?php endif; ?>
                             <div class="tilt-shine"></div>
                             <div class="product-card-image" style="height:240px; background:radial-gradient(circle at center,rgba(212,175,55,0.08) 0%,rgba(8,12,16,0.95) 80%); padding:20px; display:flex; align-items:center; justify-content:center;">
                                 <img src="<?php echo htmlspecialchars($prod['image_url']); ?>" alt="<?php echo htmlspecialchars($prod['name'] . ' - Ayurvedic Supplement'); ?>" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5)); transition:transform 0.4s ease;">
@@ -397,15 +395,63 @@ try { $stmt = $pdo->prepare("SELECT p.*, pv.id as variant_id, pv.price as max_mr
                                 <a href="product.php?slug=<?php echo $prod['slug']; ?>" style="text-decoration:none;">
                                     <h3 class="product-card-title" style="font-size:1rem; color:#fff; margin-bottom:8px; font-family:var(--font-heading); font-weight:700; line-height:1.3;"><?php echo htmlspecialchars($prod['name']); ?></h3>
                                 </a>
-                                <div style="display:flex; align-items:center; gap:6px; margin-bottom:12px;">
+                                <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
                                     <?php for($s=1;$s<=5;$s++):?><i class="<?php echo $s<=round($ar)?'fas':'far';?> fa-star" style="color:var(--gold-light); font-size:0.75rem;"></i><?php endfor;?>
                                     <span style="font-size:0.75rem; color:rgba(255,255,255,0.4);">(<?php echo $ri['cnt']; ?>)</span>
                                 </div>
-                                <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:16px;">
-                                    <span style="font-size:1.25rem; font-weight:800; color:var(--gold-primary); font-family:var(--font-heading);">₹<?php echo number_format($prod['min_price'],2); ?></span>
-                                    <span style="font-size:0.82rem; color:rgba(255,255,255,0.35); text-decoration:line-through;">MRP ₹<?php echo number_format($prod['max_mrp'],2); ?></span>
+                                <?php if(!empty($prod['short_description'])): ?>
+                                <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); line-height:1.55; margin-bottom:12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;"><?php echo htmlspecialchars($prod['short_description']); ?></p>
+                                <?php endif; ?>
+
+                                <?php
+                                $card_variants = $all_product_variants[$prod['id']] ?? [];
+                                $has_multi = count($card_variants) > 1;
+                                // default selected variant
+                                $sel_v = $card_variants[0] ?? ['id'=>$prod['default_variant_id'],'sale_price'=>$prod['min_price'],'price'=>$prod['max_mrp'],'size_capsules'=>'','stock_qty'=>1];
+                                foreach ($card_variants as $cv) { if ($cv['is_default']) { $sel_v = $cv; break; } }
+                                ?>
+
+                                <!-- Price row (updates via JS) -->
+                                <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:14px;">
+                                    <span class="card-price-sale" style="font-size:1.25rem; font-weight:800; color:var(--gold-primary); font-family:var(--font-heading);">₹<?php echo number_format($sel_v['sale_price'],2); ?></span>
+                                    <span class="card-price-mrp" style="font-size:0.82rem; color:rgba(255,255,255,0.35); text-decoration:line-through;">MRP ₹<?php echo number_format($sel_v['price'],2); ?></span>
                                 </div>
-                                <button class="btn-gold quick-add-btn" style="width:100%; padding:11px; font-size:0.82rem; border-radius:12px; font-weight:700;" data-product-id="<?php echo $prod['id']; ?>" data-variant-id="<?php echo $prod['default_variant_id']; ?>" data-csrf="<?php echo generate_csrf_token(); ?>"><i class="fas fa-shopping-cart"></i> Quick Add</button>
+
+                                <?php if ($has_multi): ?>
+                                <!-- Variant dropdown — Vahdam style -->
+                                <div style="position:relative; margin-bottom:14px;">
+                                    <select class="card-variant-select" onchange="cardVariantChange(this)"
+                                        style="width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(212,175,55,0.25); border-radius:10px; padding:10px 36px 10px 14px; color:#fff; font-size:0.85rem; font-family:var(--font-body); font-weight:600; appearance:none; -webkit-appearance:none; cursor:pointer; outline:none; transition:border-color 0.2s;"
+                                        data-product-id="<?php echo $prod['id']; ?>"
+                                        data-csrf="<?php echo generate_csrf_token(); ?>">
+                                        <?php foreach ($card_variants as $cv):
+                                            $oos = ($cv['stock_qty'] <= 0);
+                                        ?>
+                                        <option value="<?php echo $cv['id']; ?>"
+                                            data-sale="<?php echo $cv['sale_price']; ?>"
+                                            data-mrp="<?php echo $cv['price']; ?>"
+                                            data-oos="<?php echo $oos ? '1' : '0'; ?>"
+                                            <?php echo $cv['is_default'] ? 'selected' : ''; ?>
+                                            <?php echo $oos ? 'disabled' : ''; ?>>
+                                            <?php echo htmlspecialchars($cv['size_capsules']); ?><?php echo $oos ? ' — Out of Stock' : ''; ?>
+                                        </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <i class="fas fa-chevron-down" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--gold-primary); font-size:0.7rem; pointer-events:none;"></i>
+                                </div>
+                                <?php endif; ?>
+
+                                <?php if(($prod['total_stock'] ?? 1) <= 0): ?>
+                                    <button style="width:100%; padding:11px; font-size:0.82rem; border-radius:12px; font-weight:700; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.35); cursor:not-allowed;" disabled><i class="fas fa-ban"></i> Out of Stock</button>
+                                <?php else: ?>
+                                    <button class="btn-gold card-atc-btn" style="width:100%; padding:11px; font-size:0.82rem; border-radius:12px; font-weight:700;"
+                                        data-product-id="<?php echo $prod['id']; ?>"
+                                        data-variant-id="<?php echo $sel_v['id']; ?>"
+                                        data-csrf="<?php echo generate_csrf_token(); ?>"
+                                        onclick="cardAddToCart(this)">
+                                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                                    </button>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; else: ?>
@@ -877,7 +923,13 @@ if (!$featured && !empty($testimonials)) {
     <div class="blog-grid">
         <?php foreach ($blogs as $blog): ?>
             <div class="blog-card tilt-card spotlight-card"><div class="tilt-shine"></div>
-                <div class="blog-card-image"><img src="<?php echo htmlspecialchars($blog['cover_image'] ?: 'assets/images/blog/default.png'); ?>" alt="<?php echo htmlspecialchars($blog['title']); ?>"><span class="blog-card-badge"><?php echo htmlspecialchars($blog['category_tag']); ?></span></div>
+                <div class="blog-card-image"><img src="<?php 
+    $cover = $blog['cover_image'] ?: '';
+    if (!empty($cover) && !str_starts_with($cover, 'http')) {
+        $cover = '/wolfnutrition/' . ltrim($cover, '/');
+    }
+    echo htmlspecialchars($cover ?: '/wolfnutrition/assets/images/blog/shilajit_blog.png'); 
+?>" alt="<?php echo htmlspecialchars($blog['title']); ?>" onerror="this.onerror=null;this.src='/wolfnutrition/assets/images/blog/shilajit_blog.png';this.style.objectFit='cover';"><span class="blog-card-badge"><?php echo htmlspecialchars($blog['category_tag']); ?></span></div>
                 <div class="blog-card-content"><div class="blog-card-date"><?php echo date('M d, Y', strtotime($blog['published_at'])); ?></div><a href="blog-post.php?slug=<?php echo $blog['slug']; ?>"><h3 class="blog-card-title"><?php echo htmlspecialchars($blog['title']); ?></h3></a><p class="blog-card-excerpt"><?php $text=strip_tags($blog['body']); echo htmlspecialchars(strlen($text)>100?substr($text,0,97).'...':$text); ?></p><a href="blog-post.php?slug=<?php echo $blog['slug']; ?>" class="blog-card-link">Read Article <i class="fas fa-arrow-right"></i></a></div>
             </div>
         <?php endforeach; ?>
@@ -1017,8 +1069,93 @@ function handleNewsletterSubmit(e) {
 // ── Gold Particles ──
 (function(){var c=document.getElementById('goldParticles');if(!c)return;var ctx=c.getContext('2d'),p=[];function r(){c.width=window.innerWidth;c.height=window.innerHeight;}r();window.addEventListener('resize',r);for(var i=0;i<40;i++)p.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*2+0.5,dx:(Math.random()-0.5)*0.3,dy:(Math.random()-0.5)*0.3,o:Math.random()*0.5+0.1});function d(){ctx.clearRect(0,0,c.width,c.height);for(var i=0;i<p.length;i++){var v=p[i];ctx.beginPath();ctx.arc(v.x,v.y,v.r,0,Math.PI*2);ctx.fillStyle='rgba(212,175,55,'+v.o+')';ctx.fill();v.x+=v.dx;v.y+=v.dy;if(v.x<0||v.x>c.width)v.dx*=-1;if(v.y<0||v.y>c.height)v.dy*=-1;}requestAnimationFrame(d);}d();})();
 
+// ── Card Variant Selector ──
+function cardVariantChange(select) {
+    var card = select.closest('.product-card-info');
+    var opt  = select.options[select.selectedIndex];
+    var sale = parseFloat(opt.getAttribute('data-sale'));
+    var mrp  = parseFloat(opt.getAttribute('data-mrp'));
+    var oos  = opt.getAttribute('data-oos') === '1';
+    var vid  = opt.value;
+
+    // Update price display
+    var saleEl = card.querySelector('.card-price-sale');
+    var mrpEl  = card.querySelector('.card-price-mrp');
+    if (saleEl) saleEl.textContent = '₹' + sale.toLocaleString('en-IN', {minimumFractionDigits:2});
+    if (mrpEl)  mrpEl.textContent  = 'MRP ₹' + mrp.toLocaleString('en-IN', {minimumFractionDigits:2});
+
+    // Update ATC button
+    var btn = card.querySelector('.card-atc-btn');
+    if (btn) {
+        btn.setAttribute('data-variant-id', vid);
+        if (oos) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-ban"></i> Out of Stock';
+            btn.style.cssText = 'width:100%;padding:11px;font-size:0.82rem;border-radius:12px;font-weight:700;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.35);cursor:not-allowed;';
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+            btn.style.cssText = '';
+        }
+    }
+
+    // Highlight the select border on change
+    select.style.borderColor = 'rgba(212,175,55,0.6)';
+    setTimeout(function(){ select.style.borderColor = 'rgba(212,175,55,0.25)'; }, 600);
+}
+
+function cardAddToCart(btn) {
+    var pid  = btn.getAttribute('data-product-id');
+    var vid  = btn.getAttribute('data-variant-id');
+    var csrf = btn.getAttribute('data-csrf');
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+
+    var fd = new URLSearchParams();
+    fd.append('action',     'add');
+    fd.append('product_id', pid);
+    fd.append('variant_id', vid);
+    fd.append('quantity',   '1');
+    fd.append('csrf_token', csrf);
+
+    fetch('cart_api.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: fd.toString()
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+        if (d.success) {
+            btn.innerHTML = '<i class="fas fa-check"></i> Added!';
+            btn.style.background = 'linear-gradient(135deg,#2ecc71,#27ae60)';
+            // Update cart badge
+            var badge = document.querySelector('.cart-badge');
+            if (badge && d.cart_count !== undefined) {
+                badge.textContent = d.cart_count;
+                badge.style.display = 'flex';
+            }
+            setTimeout(function(){
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+                btn.style.background = '';
+            }, 2000);
+        } else if (d.login_required) {
+            window.location.href = 'login.php';
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+            alert(d.message || 'Could not add to cart');
+        }
+    })
+    .catch(function(){
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+    });
+}
+
 // ── Scroll Reveal ──
-(function(){var els=document.querySelectorAll('.section-header,.category-tile,.product-card,.trust-item,.blog-card,.counter-item,.proof-card,.tilt-card');els.forEach(function(el){el.style.opacity='0';el.style.transform='translateY(24px)';el.style.transition='opacity 0.55s ease, transform 0.55s ease';});var obs=new IntersectionObserver(function(entries){entries.forEach(function(e,i){if(e.isIntersecting){setTimeout(function(){e.target.style.opacity='1';e.target.style.transform='translateY(0)';},i*60);obs.unobserve(e.target);}});},{threshold:0.1});els.forEach(function(el){obs.observe(el);});})();
+(function(){var els=document.querySelectorAll('.section-header,.category-tile,.product-card,.trust-item,.blog-card,.counter-item,.proof-card');els.forEach(function(el){el.style.opacity='0';el.style.transform='translateY(20px)';el.style.transition='opacity 0.45s ease, transform 0.45s ease';});var obs=new IntersectionObserver(function(entries){entries.forEach(function(e,i){if(e.isIntersecting){setTimeout(function(){e.target.style.opacity='1';e.target.style.transform='translateY(0)';},i*40);obs.unobserve(e.target);}});},{threshold:0.08});els.forEach(function(el){obs.observe(el);});})();
 
 // ── Counter Animation ──
 (function(){var counters=document.querySelectorAll('.counter-num[data-target]');var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){var el=e.target,target=parseInt(el.getAttribute('data-target')),current=0,increment=target/50;var timer=setInterval(function(){current+=increment;if(current>=target){current=target;clearInterval(timer);}el.textContent=Math.floor(current).toLocaleString()+(target>=1000?'+':'');},30);obs.unobserve(el);}});},{threshold:0.5});counters.forEach(function(c){obs.observe(c);});})();

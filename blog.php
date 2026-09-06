@@ -26,7 +26,14 @@ try {
                 <?php foreach ($posts as $blog): ?>
                     <div class="blog-card">
                         <div class="blog-card-image">
-                            <img src="<?php echo htmlspecialchars($blog['cover_image'] ? $blog['cover_image'] : 'assets/images/blog/default.png'); ?>" alt="<?php echo htmlspecialchars($blog['title']); ?>">
+                            <?php 
+                            $cover = $blog['cover_image'] ?? '';
+                            if (!empty($cover) && !str_starts_with($cover, 'http')) {
+                                $cover = '/wolfnutrition/' . ltrim($cover, '/');
+                            }
+                            $cover = $cover ?: '/wolfnutrition/assets/images/blog/shilajit_blog.png';
+                            ?>
+                            <img src="<?php echo htmlspecialchars($cover); ?>" alt="<?php echo htmlspecialchars($blog['title']); ?>" onerror="this.onerror=null;this.src='/wolfnutrition/assets/images/blog/shilajit_blog.png';">
                             <span class="blog-card-badge"><?php echo htmlspecialchars($blog['category_tag']); ?></span>
                         </div>
                         <div class="blog-card-content">

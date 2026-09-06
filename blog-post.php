@@ -91,8 +91,8 @@ try {
                 </script>
 
                 <?php if ($post['cover_image']): ?>
-                    <div style="width:100%; height:380px; overflow:hidden; border-radius:6px; margin-bottom:35px; border:1px solid var(--border-color);">
-                        <img src="<?php echo htmlspecialchars($post['cover_image']); ?>" alt="Cover Image" style="width:100%; height:100%; object-fit:cover;">
+                    <div style="width:100%; border-radius:14px; margin-bottom:35px; border:1px solid rgba(212,175,55,0.12); overflow:hidden; background:#0c0e12; display:flex; align-items:center; justify-content:center; padding:24px;">
+                        <img src="<?php echo htmlspecialchars($post['cover_image']); ?>" alt="<?php echo htmlspecialchars($post['title']); ?>" style="max-width:100%; height:auto; max-height:500px; object-fit:contain; border-radius:8px; display:block;">
                     </div>
                 <?php endif; ?>
 
@@ -100,6 +100,152 @@ try {
                 <div class="blog-content-body" style="line-height:1.8; font-size:1.05rem; color:rgba(255,255,255,0.6);">
                     <?php echo $post['body']; ?>
                 </div>
+
+<style>
+/* ── Blog Post Typography ── */
+.blog-content-body { max-width:100%; }
+
+.blog-content-body p {
+    margin-bottom: 1.4em;
+    color: rgba(255,255,255,0.68);
+    line-height: 1.85;
+    font-size: 1rem;
+}
+.blog-content-body h1,
+.blog-content-body h2 {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 1.8em 0 0.6em;
+    line-height: 1.15;
+}
+.blog-content-body h1 { font-size: 1.7rem; }
+.blog-content-body h2 { font-size: 1.35rem; }
+.blog-content-body h3 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--gold-primary);
+    margin: 1.5em 0 0.5em;
+    letter-spacing: 0.4px;
+}
+.blog-content-body h4,
+.blog-content-body h5 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.9);
+    margin: 1.3em 0 0.4em;
+}
+.blog-content-body strong,
+.blog-content-body b {
+    color: #fff;
+    font-weight: 700;
+}
+.blog-content-body em,
+.blog-content-body i {
+    color: rgba(255,255,255,0.75);
+    font-style: italic;
+}
+.blog-content-body ul,
+.blog-content-body ol {
+    margin: 0.8em 0 1.4em 0;
+    padding-left: 0;
+    list-style: none;
+}
+.blog-content-body ul li,
+.blog-content-body ol li {
+    position: relative;
+    padding: 6px 0 6px 28px;
+    color: rgba(255,255,255,0.65);
+    font-size: 0.97rem;
+    line-height: 1.7;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.blog-content-body ul li::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold-gradient);
+}
+.blog-content-body ol {
+    counter-reset: list-counter;
+}
+.blog-content-body ol li {
+    counter-increment: list-counter;
+}
+.blog-content-body ol li::before {
+    content: counter(list-counter);
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(212,175,55,0.12);
+    border: 1px solid rgba(212,175,55,0.2);
+    color: var(--gold-primary);
+    font-size: 0.68rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    text-align: center;
+}
+.blog-content-body blockquote {
+    margin: 1.8em 0;
+    padding: 18px 24px;
+    border-left: 3px solid var(--gold-primary);
+    background: rgba(212,175,55,0.04);
+    border-radius: 0 12px 12px 0;
+    color: rgba(255,255,255,0.75);
+    font-style: italic;
+    font-size: 1.02rem;
+    line-height: 1.75;
+}
+.blog-content-body a {
+    color: var(--gold-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s;
+}
+.blog-content-body a:hover { color: #fff; }
+.blog-content-body img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin: 1.4em 0;
+    border: 1px solid rgba(212,175,55,0.1);
+}
+.blog-content-body hr {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    margin: 2em 0;
+}
+.blog-content-body code {
+    background: rgba(212,175,55,0.08);
+    border: 1px solid rgba(212,175,55,0.15);
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 0.88em;
+    color: var(--gold-primary);
+}
+.blog-content-body pre {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    margin: 1.4em 0;
+}
+</style>
             </article>
 
             <!-- Sidebar -->

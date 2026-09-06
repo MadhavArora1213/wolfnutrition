@@ -1730,27 +1730,38 @@ input:-webkit-autofill:active {
 .blog-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 16px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     transition: var(--transition-normal);
 }
 .blog-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-6px);
     border-color: var(--gold-primary);
-    box-shadow: var(--gold-glow);
+    box-shadow: 0 16px 40px rgba(8,12,16,0.5), var(--gold-glow);
 }
 .blog-card-image {
-    height: 200px;
+    height: 280px;
     position: relative;
     overflow: hidden;
+    background: #0c0e12;
 }
 .blog-card-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center 20%;
     transition: transform var(--transition-normal);
+}
+
+/* When image is a product/transparent-bg image, contain it */
+.blog-card-image img[src*="wolfpack"],
+.blog-card-image img[src*="wolftox"],
+.blog-card-image img[src*="products"] {
+    object-fit: contain;
+    padding: 16px;
+    background: radial-gradient(circle at center, rgba(212,175,55,0.06) 0%, transparent 70%);
 }
 .blog-card:hover .blog-card-image img {
     transform: scale(1.05);
