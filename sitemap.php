@@ -6,7 +6,7 @@ header("Content-Type: application/xml; charset=utf-8");
 
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-$base_url = $scheme . "://" . $host . "/wolfnutrition";
+$base_url = $scheme . "://" . $host;
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";

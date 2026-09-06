@@ -8,6 +8,19 @@ define('DB_NAME', getenv('DB_NAME') ?: 'wolfnutrition');
 define('DB_USER', getenv('DB_USER') ?: 'root');
 define('DB_PASS', getenv('DB_PASS') ?: '');
 
+// ── Base URL (works on localhost/subfolder and live domain) ──
+if (!defined('BASE_URL')) {
+    $scheme   = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host     = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $script   = $_SERVER['SCRIPT_NAME'] ?? '/index.php';
+    // Find the root directory relative to document root
+    $docRoot  = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/');
+    $appRoot  = dirname(dirname(__FILE__)); // one level up from config/
+    $subPath  = str_replace($docRoot, '', $appRoot);
+    $subPath  = str_replace('\\', '/', $subPath);
+    define('BASE_URL', $scheme . '://' . $host . rtrim($subPath, '/'));
+}
+
 try {
     $pdo = new PDO(
         "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",

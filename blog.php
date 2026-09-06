@@ -29,11 +29,11 @@ try {
                             <?php 
                             $cover = $blog['cover_image'] ?? '';
                             if (!empty($cover) && !str_starts_with($cover, 'http')) {
-                                $cover = '/wolfnutrition/' . ltrim($cover, '/');
+                                $cover = '/' . ltrim($cover, '/');
                             }
-                            $cover = $cover ?: '/wolfnutrition/assets/images/blog/shilajit_blog.png';
+                            $cover = $cover ?: '/assets/images/logo.png';
                             ?>
-                            <img src="<?php echo htmlspecialchars($cover); ?>" alt="<?php echo htmlspecialchars($blog['title']); ?>" onerror="this.onerror=null;this.src='/wolfnutrition/assets/images/blog/shilajit_blog.png';">
+                            <img src="<?php echo htmlspecialchars($cover); ?>" alt="<?php echo htmlspecialchars($blog['title']); ?>" onerror="this.onerror=null;this.src='/assets/images/logo.png';">
                             <span class="blog-card-badge"><?php echo htmlspecialchars($blog['category_tag']); ?></span>
                         </div>
                         <div class="blog-card-content">

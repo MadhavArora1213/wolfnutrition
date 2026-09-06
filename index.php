@@ -926,10 +926,10 @@ if (!$featured && !empty($testimonials)) {
                 <div class="blog-card-image"><img src="<?php 
     $cover = $blog['cover_image'] ?: '';
     if (!empty($cover) && !str_starts_with($cover, 'http')) {
-        $cover = '/wolfnutrition/' . ltrim($cover, '/');
+        $cover = '/' . ltrim($cover, '/');
     }
-    echo htmlspecialchars($cover ?: '/wolfnutrition/assets/images/blog/shilajit_blog.png'); 
-?>" alt="<?php echo htmlspecialchars($blog['title']); ?>" onerror="this.onerror=null;this.src='/wolfnutrition/assets/images/blog/shilajit_blog.png';this.style.objectFit='cover';"><span class="blog-card-badge"><?php echo htmlspecialchars($blog['category_tag']); ?></span></div>
+    echo htmlspecialchars($cover ?: '/assets/images/logo.png'); 
+?>" alt="<?php echo htmlspecialchars($blog['title']); ?>" onerror="this.onerror=null;this.src='/assets/images/logo.png';this.style.objectFit='cover';"><span class="blog-card-badge"><?php echo htmlspecialchars($blog['category_tag']); ?></span></div>
                 <div class="blog-card-content"><div class="blog-card-date"><?php echo date('M d, Y', strtotime($blog['published_at'])); ?></div><a href="blog-post.php?slug=<?php echo $blog['slug']; ?>"><h3 class="blog-card-title"><?php echo htmlspecialchars($blog['title']); ?></h3></a><p class="blog-card-excerpt"><?php $text=strip_tags($blog['body']); echo htmlspecialchars(strlen($text)>100?substr($text,0,97).'...':$text); ?></p><a href="blog-post.php?slug=<?php echo $blog['slug']; ?>" class="blog-card-link">Read Article <i class="fas fa-arrow-right"></i></a></div>
             </div>
         <?php endforeach; ?>

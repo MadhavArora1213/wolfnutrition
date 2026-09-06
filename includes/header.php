@@ -72,7 +72,7 @@ if ($active_page === 'product.php' && isset($_GET['slug'])) {
     <meta property="og:url" content="<?php echo $canonical_url; ?>">
     <meta property="og:title" content="<?php echo $seo_title; ?>">
     <meta property="og:description" content="<?php echo $seo_desc; ?>">
-    <meta property="og:image" content="<?php echo ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/wolfnutrition/' . (isset($blog_og_image) ? $blog_og_image : 'assets/images/logo.png'); ?>">
+    <meta property="og:image" content="<?php echo ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/' . (isset($blog_og_image) ? $blog_og_image : 'assets/images/logo.png'); ?>">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="Wolf Nutrition">
@@ -83,7 +83,7 @@ if ($active_page === 'product.php' && isset($_GET['slug'])) {
     <meta name="twitter:url" content="<?php echo $canonical_url; ?>">
     <meta name="twitter:title" content="<?php echo $seo_title; ?>">
     <meta name="twitter:description" content="<?php echo $seo_desc; ?>">
-    <meta name="twitter:image" content="<?php echo ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/wolfnutrition/' . (isset($blog_og_image) ? $blog_og_image : 'assets/images/logo.png'); ?>">
+    <meta name="twitter:image" content="<?php echo ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/' . (isset($blog_og_image) ? $blog_og_image : 'assets/images/logo.png'); ?>">
 
     <!-- Mobile Browser Theme Color -->
     <meta name="theme-color" content="#080C10">
@@ -96,7 +96,7 @@ if ($active_page === 'product.php' && isset($_GET['slug'])) {
     <!-- JSON-LD Structured Data for Search Engine rich snippets -->
     <script type="application/ld+json">
     <?php
-    $site_base = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/wolfnutrition';
+    $site_base = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
     $logo_url = $site_base . '/assets/images/logo.png';
 
     if ($active_page === 'product.php' && isset($prod_seo)) {
@@ -224,9 +224,9 @@ if ($active_page === 'product.php' && isset($_GET['slug'])) {
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Header CSS -->
-    <link rel="stylesheet" href="assets/css/header-clean.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/header-clean.css">
     <!-- Main Style CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/style.css">
 </head>
 <body>
 
@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             <!-- CENTER: Logo -->
             <a href="index.php" class="logo-center" aria-label="Wolf Nutrition - Home">
-                <img src="assets/images/logo.png" alt="Wolf Nutrition">
+                <img src="<?php echo BASE_URL; ?>/assets/images/logo.png" alt="Wolf Nutrition">
                 <div class="logo-wordmark">WOLF <span>NUTRITION</span></div>
             </a>
 
@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <nav class="mobile-nav" id="mobileNav">
         <div class="mobile-nav-header">
             <a href="index.php" class="mobile-nav-logo" aria-label="Wolf Nutrition - Home">
-                <img src="assets/images/logo.png" alt="Wolf Nutrition Logo">
+                <img src="<?php echo BASE_URL; ?>/assets/images/logo.png" alt="Wolf Nutrition Logo">
                 <span>WOLF NUTRITION</span>
             </a>
             <button class="mobile-nav-close" id="mobileCloseBtn">
