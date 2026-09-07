@@ -223,10 +223,8 @@ if ($active_page === 'product.php' && isset($_GET['slug'])) {
 
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Header CSS -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/header-clean.css">
-    <!-- Main Style CSS -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/style.css">
+    <!-- Main Style CSS (includes header styles) -->
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/style.css?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/assets/css/style.css'); ?>">
 </head>
 <body>
 

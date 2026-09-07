@@ -10,7 +10,7 @@ require_once __DIR__ . '/functions.php';
                 <!-- About Info -->
                 <div class="footer-about">
                     <a href="index.php" class="logo" style="margin-bottom: 15px;" aria-label="Wolf Nutrition - Home">
-                        <img src="assets/images/logo.png" alt="Wolf Nutrition - Premium Ayurvedic Supplements">
+                        <img src="<?php echo BASE_URL; ?>/assets/images/logo.png" alt="Wolf Nutrition - Premium Ayurvedic Supplements">
                     </a>
                     <p>Ancient Ayurvedic wisdom engineered for modern male peak performance. Clean, raw formulations with zero hidden fillers.</p>
                 </div>
