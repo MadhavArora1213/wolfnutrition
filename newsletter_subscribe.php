@@ -15,20 +15,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// Must be logged in
-if (!is_logged_in()) {
-    echo json_encode(['success' => false, 'message' => 'Please log in to subscribe.']);
+// Get email from POST
+$email = filter_var(trim($_POST['email'] ?? ''), FILTER_VALIDATE_EMAIL);
+if (!$email) {
+    echo json_encode(['success' => false, 'message' => 'Please enter a valid email address.']);
     exit();
 }
 
-// Get logged-in user's email
-$user = get_logged_in_user();
-if (!$user) {
-    echo json_encode(['success' => false, 'message' => 'User session expired. Please log in again.']);
-    exit();
-}
-
-$email = $user['email'];
 $ip = get_client_ip();
 
 // Rate limiting: max 3 subscriptions per IP per hour
@@ -54,7 +47,8 @@ if ($existing) {
         $reactivate->execute([$existing['id']]);
         
         // Send reactivation email
-        send_welcome_email($user['name'], $email);
+        $name = explode('@', $email)[0];
+        send_welcome_email($name, $email);
         
         echo json_encode(['success' => true, 'message' => 'Welcome back! Your subscription has been reactivated. Check your inbox.']);
         exit();
@@ -66,7 +60,8 @@ $insert_stmt = $pdo->prepare("INSERT INTO newsletter_subscribers (email, ip_addr
 $insert_stmt->execute([$email, $ip]);
 
 // Send welcome email
-send_welcome_email($user['name'], $email);
+$name = explode('@', $email)[0];
+send_welcome_email($name, $email);
 
 echo json_encode(['success' => true, 'message' => 'Welcome to the pack! Check your inbox for a confirmation.']);
 

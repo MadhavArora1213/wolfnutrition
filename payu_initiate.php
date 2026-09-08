@@ -33,26 +33,7 @@ $address_line1 = sanitize_string($_POST['address_line1'] ?? '');
 $address_line2 = sanitize_string($_POST['address_line2'] ?? '');
 $city         = sanitize_string($_POST['city'] ?? '');
 $state        = sanitize_string($_POST['state'] ?? '');
-$note         = sanitize_string($_SESSION['cart_notes'] ?? '');
-
-$user = get_logged_in_user();
-
-// Address selection from saved
-if ($user && isset($_POST['selected_address_id']) && $_POST['selected_address_id'] !== 'new') {
-    $addr_id = (int)$_POST['selected_address_id'];
-    $stmt_a = $pdo->prepare("SELECT * FROM user_addresses WHERE id = ? AND user_id = ?");
-    $stmt_a->execute([$addr_id, $user['id']]);
-    $addr = $stmt_a->fetch();
-    if ($addr) {
-        $cust_name = $addr['name'];
-        $cust_phone = $addr['phone'];
-        $pincode = $addr['pincode'];
-        $address_line1 = $addr['address_line1'];
-        $address_line2 = $addr['address_line2'];
-        $city = $addr['city'];
-        $state = $addr['state'];
-    }
-}
+$note = sanitize_string($_SESSION['cart_notes'] ?? '');
 
 // Basic validation
 if (empty($cust_name) || empty($cust_email) || empty($cust_phone) || empty($pincode) || empty($address_line1) || empty($city) || empty($state)) {
@@ -87,7 +68,7 @@ try {
     $pdo->beginTransaction();
 
     $order_number = 'WN-' . time() . '-' . rand(1000, 9999);
-    $user_id = $user ? $user['id'] : null;
+    $user_id = null;
 
     $stmt_o = $pdo->prepare("
         INSERT INTO orders (user_id, order_number, subtotal, discount, shipping, total, payment_method, payment_status, customer_name, customer_email, customer_phone, shipping_address, pincode, note)

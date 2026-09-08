@@ -25,32 +25,6 @@ if (!$order) {
     exit();
 }
 
-// CRITICAL: Ownership check — only the order owner (or admin) can view
-$is_owner = false;
-if (is_logged_in()) {
-    if (isset($_SESSION['admin_id'])) {
-        $is_owner = true; // Admins can view any order
-    } elseif (isset($_SESSION['user_id'])) {
-        // Check via user_id column (logged-in users)
-        if ($order['user_id'] == $_SESSION['user_id']) {
-            $is_owner = true;
-        } else {
-            // Fallback: check via email match
-            $stmt_user = $pdo->prepare("SELECT email FROM users WHERE id = ?");
-            $stmt_user->execute([$_SESSION['user_id']]);
-            $current_user = $stmt_user->fetch();
-            if ($current_user && $current_user['email'] === $order['customer_email']) {
-                $is_owner = true;
-            }
-        }
-    }
-}
-
-if (!$is_owner) {
-    header("Location: my-account.php");
-    exit();
-}
-
 // Fetch Items
 $stmt_i = $pdo->prepare("SELECT * FROM order_items WHERE order_id = ?");
 $stmt_i->execute([$order['id']]);
@@ -131,7 +105,7 @@ if ($est['valid']) {
 
             <div style="display:flex; gap:15px; justify-content:center;">
                 <a href="index.php" class="btn-outline-gold" style="padding:12px 25px;">Back to Shop</a>
-                <a href="my-account.php" class="btn-gold" style="padding:12px 25px;">Track Order in My Account</a>
+                <a href="index.php" class="btn-gold" style="padding:12px 25px;">Continue Shopping</a>
             </div>
             
         </div>

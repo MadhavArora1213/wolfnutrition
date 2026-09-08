@@ -333,10 +333,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <button class="nav-icon search-trigger" aria-label="Search">
                     <i class="fas fa-search"></i>
                 </button>
-                <a href="<?php echo is_logged_in() ? 'my-account.php' : 'login.php'; ?>" class="nav-icon" aria-label="<?php echo is_logged_in() ? 'My Account' : 'Login'; ?>">
-                    <i class="fas fa-user"></i>
-                    <?php if (is_logged_in()): ?><span class="nav-icon-dot"></span><?php endif; ?>
-                </a>
                 <button class="nav-icon cart-drawer-trigger" aria-label="Cart">
                     <i class="fas fa-bag-shopping"></i>
                     <span class="cart-badge" style="<?php echo $cart_count > 0 ? 'display:flex;' : 'display:none;'; ?>">
@@ -440,8 +436,8 @@ document.addEventListener('DOMContentLoaded', function() {
             </li>
         </ul>
         <div class="mobile-nav-footer">
-            <a href="<?php echo is_logged_in() ? 'my-account.php' : 'login.php'; ?>" class="btn-gold" style="width:100%; justify-content:center; padding:12px; text-decoration:none;">
-                <i class="fas fa-user-circle"></i> <?php echo is_logged_in() ? 'My Account' : 'Login / Register'; ?>
+            <a href="index.php" class="btn-gold" style="width:100%; justify-content:center; padding:12px; text-decoration:none;">
+                <i class="fas fa-shopping-cart"></i> Shop Now
             </a>
         </div>
     </nav>

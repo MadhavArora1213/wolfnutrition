@@ -8,15 +8,6 @@ if (empty($cart_items)) {
     exit();
 }
 
-$user = get_logged_in_user();
-$saved_addresses = [];
-if ($user) {
-    // Fetch saved addresses
-    $stmt = $pdo->prepare("SELECT * FROM user_addresses WHERE user_id = ? ORDER BY is_default DESC");
-    $stmt->execute([$user['id']]);
-    $saved_addresses = $stmt->fetchAll();
-}
-
 $payment_method = 'UPI';
 $totals = get_cart_totals($payment_method);
 $checkout_error = '';
@@ -66,45 +57,22 @@ $checkout_error = '';
                 
                 <!-- Shipping Address Form -->
                 <div>
-                    <!-- Address Selector for Logged In users -->
-                    <?php if ($user && !empty($saved_addresses)): ?>
-                        <div class="checkout-section-box">
-                            <h3>Select Shipping Address</h3>
-                            <div style="display:flex; flex-direction:column; gap:15px; margin-bottom:20px;">
-                                <?php foreach ($saved_addresses as $addr): ?>
-                                    <label style="display:flex; align-items:start; gap:12px; padding:15px; border:1px solid var(--border-color); border-radius:4px; background:var(--bg-primary); cursor:pointer;">
-                                        <input type="radio" name="selected_address_id" value="<?php echo $addr['id']; ?>" <?php echo $addr['is_default'] ? 'checked' : ''; ?> style="margin-top:4px; accent-color:var(--gold-primary);">
-                                        <div>
-                                            <div style="font-weight:700; color:#fff;"><?php echo htmlspecialchars($addr['name']); ?> (<?php echo htmlspecialchars($addr['phone']); ?>)</div>
-                                            <div style="font-size:0.85rem; margin-top:4px;"><?php echo htmlspecialchars($addr['address_line1'] . ', ' . $addr['address_line2']); ?></div>
-                                            <div style="font-size:0.85rem;"><?php echo htmlspecialchars($addr['city'] . ', ' . $addr['state'] . ' - ' . $addr['pincode']); ?></div>
-                                        </div>
-                                    </label>
-                                <?php endforeach; ?>
-                                <label style="display:flex; align-items:center; gap:12px; padding:15px; border:1px solid var(--border-color); border-radius:4px; background:var(--bg-primary); cursor:pointer;">
-                                    <input type="radio" name="selected_address_id" value="new" style="accent-color:var(--gold-primary);">
-                                    <span style="font-weight:600; color:var(--gold-primary);">+ Add New Shipping Address</span>
-                                </label>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-
-                    <div class="checkout-section-box" id="new-address-form-box" style="<?php echo ($user && !empty($saved_addresses)) ? 'display:none;' : ''; ?>">
+                    <div class="checkout-section-box" id="new-address-form-box">
                         <h3>Shipping Details</h3>
                         
                         <div class="form-group">
                             <label for="customer_name">Full Name *</label>
-                            <input type="text" name="customer_name" id="customer_name" class="form-control" value="<?php echo $user ? htmlspecialchars($user['name']) : ''; ?>" placeholder="Enter recipient's full name">
+                            <input type="text" name="customer_name" id="customer_name" class="form-control" value="" placeholder="Enter recipient's full name">
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="customer_email">Email Address *</label>
-                                <input type="email" name="customer_email" id="customer_email" class="form-control" value="<?php echo $user ? htmlspecialchars($user['email']) : ''; ?>" placeholder="For order receipt & tracking link">
+                                <input type="email" name="customer_email" id="customer_email" class="form-control" value="" placeholder="For order receipt & tracking link">
                             </div>
                             <div class="form-group">
                                 <label for="customer_phone">Phone Number *</label>
-                                <input type="text" name="customer_phone" id="customer_phone" class="form-control" value="<?php echo $user ? htmlspecialchars($user['phone']) : ''; ?>" placeholder="10-digit mobile number" maxlength="10">
+                                <input type="text" name="customer_phone" id="customer_phone" class="form-control" value="" placeholder="10-digit mobile number" maxlength="10">
                             </div>
                         </div>
 
@@ -209,17 +177,6 @@ $checkout_error = '';
             });
         }
 
-        // ── Toggle Address Block ──
-        var savedAddrRadios = document.querySelectorAll('input[name="selected_address_id"]');
-        var newAddressFormBox = document.getElementById('new-address-form-box');
-
-        if (savedAddrRadios.length > 0 && newAddressFormBox) {
-            savedAddrRadios.forEach(function(radio) {
-                radio.addEventListener('change', function() {
-                    newAddressFormBox.style.display = (this.value === 'new') ? 'block' : 'none';
-                });
-            });
-        }
     </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

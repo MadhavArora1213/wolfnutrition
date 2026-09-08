@@ -19,8 +19,6 @@ $static_pages = [
     ['/certificates.php', '0.70', 'monthly'],
     ['/blog.php', '0.80', 'weekly'],
     ['/cart.php', '0.30', 'monthly'],
-    ['/login.php', '0.30', 'monthly'],
-    ['/register.php', '0.30', 'monthly'],
 ];
 
 foreach ($static_pages as [$page, $priority, $freq]) {

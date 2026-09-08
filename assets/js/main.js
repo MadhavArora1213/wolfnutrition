@@ -231,8 +231,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     updateCartCountBadge(data.cart_count);
                     openCart(); // Show slide drawer
-                } else if (data.login_required) {
-                    window.location.href = 'login.php';
                 } else {
                     alert(data.message || 'Error adding item to cart.');
                 }
@@ -265,8 +263,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     updateCartCountBadge(data.cart_count);
                     openCart();
-                } else if (data.login_required) {
-                    window.location.href = 'login.php';
                 } else {
                     alert(data.message || 'Error adding item.');
                 }
@@ -295,8 +291,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     updateCartCountBadge(data.cart_count);
                     openCart();
-                } else if (data.login_required) {
-                    window.location.href = 'login.php';
                 } else {
                     alert(data.message || 'Combo is currently out of stock.');
                 }
@@ -328,8 +322,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(function(data) {
                 if (data.success) {
                     window.location.href = 'checkout.php';
-                } else if (data.login_required) {
-                    window.location.href = 'login.php';
                 } else {
                     alert(data.message || 'Error adding item.');
                 }

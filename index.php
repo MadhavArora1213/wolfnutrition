@@ -995,23 +995,10 @@ if (!$featured && !empty($testimonials)) {
         <h2 style="font-size:2rem; text-transform:uppercase; margin-bottom:8px; font-family:var(--font-heading); position:relative; z-index:2;">Join the Wolf Pack</h2>
         <p style="color:rgba(255,255,255,0.65); font-size:0.95rem; margin-bottom:28px; max-width:460px; margin-left:auto; margin-right:auto; position:relative; z-index:2;">Exclusive Ayurvedic stack guides, discounts, and early access to new releases. No spam, only gains.</p>
 
-        <?php if (is_logged_in()): ?>
-            <?php
-                $nl_user = get_logged_in_user();
-                $nl_email = $nl_user ? htmlspecialchars($nl_user['email']) : '';
-            ?>
-            <form class="newsletter-form" id="newsletter-form" onsubmit="return handleNewsletterSubmit(event);" style="display:flex; gap:10px; max-width:440px; margin:0 auto; position:relative; z-index:2;">
-                <input type="email" name="email" id="nl-email" value="<?php echo $nl_email; ?>" readonly required style="flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:30px; padding:13px 20px; color:#fff; font-size:0.9rem; outline:none; font-family:var(--font-body); cursor:not-allowed; opacity:0.8;">
-                <button type="submit" id="nl-btn" class="btn-gold" style="border-radius:30px; padding:13px 26px; white-space:nowrap; font-size:0.88rem;"><i class="fas fa-paper-plane"></i> Subscribe</button>
-            </form>
-        <?php else: ?>
-            <div style="max-width:440px; margin:0 auto; position:relative; z-index:2;">
-                <p style="color:rgba(255,255,255,0.5); font-size:0.88rem; margin-bottom:14px;">Please log in to subscribe with your verified email.</p>
-                <a href="login.php?redirect=home" class="btn-gold" style="border-radius:30px; padding:13px 30px; font-size:0.88rem; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
-                    <i class="fas fa-sign-in-alt"></i> Login to Subscribe
-                </a>
-            </div>
-        <?php endif; ?>
+        <form class="newsletter-form" id="newsletter-form" onsubmit="return handleNewsletterSubmit(event);" style="display:flex; gap:10px; max-width:440px; margin:0 auto; position:relative; z-index:2;">
+            <input type="email" name="email" id="nl-email" required placeholder="Enter your email address" style="flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:30px; padding:13px 20px; color:#fff; font-size:0.9rem; outline:none; font-family:var(--font-body);">
+            <button type="submit" id="nl-btn" class="btn-gold" style="border-radius:30px; padding:13px 26px; white-space:nowrap; font-size:0.88rem;"><i class="fas fa-paper-plane"></i> Subscribe</button>
+        </form>
 
         <div id="nl-message" style="margin-top:12px; font-size:0.85rem; display:none; position:relative; z-index:2;"></div>
     </div>
@@ -1138,8 +1125,6 @@ function cardAddToCart(btn) {
                 btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
                 btn.style.background = '';
             }, 2000);
-        } else if (d.login_required) {
-            window.location.href = 'login.php';
         } else {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';

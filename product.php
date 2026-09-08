@@ -26,11 +26,6 @@ $review_success = $review_error = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
     $rn = trim($_POST['user_name'] ?? ''); $rt = trim($_POST['title'] ?? ''); $rb = trim($_POST['review_text'] ?? ''); $rs = (int)($_POST['rating'] ?? 5);
     $uid = null;
-    if (is_logged_in() && isset($_SESSION['user_id'])) {
-        $stmt_uid = $pdo->prepare("SELECT id FROM users WHERE id = ?");
-        $stmt_uid->execute([$_SESSION['user_id']]);
-        if ($stmt_uid->fetch()) $uid = $_SESSION['user_id'];
-    }
     if (empty($rn) || empty($rb)) { $review_error = "Please fill in your name and review."; }
     elseif ($rs < 1 || $rs > 5) { $review_error = "Invalid rating."; }
     else { $pdo->prepare("INSERT INTO reviews (product_id,user_id,user_name,rating,title,review_text,is_approved) VALUES (?,?,?,?, ?,?,0)")->execute([$product['id'],$uid,$rn,$rs,$rt,$rb]); $review_success = "Review submitted! Pending approval."; }
@@ -533,7 +528,7 @@ function showAddToCartToast(){
 
 // Add to Cart
 var csrfToken='<?php echo generate_csrf_token(); ?>';
-function addToCart(){var qty=document.getElementById('pd-qty-input').value;var fd=new URLSearchParams();fd.append('action','add');fd.append('product_id','<?php echo $product["id"];?>');fd.append('variant_id',currentVariantId);fd.append('quantity',qty);fd.append('csrf_token',csrfToken);fetch('cart_api.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:fd.toString()}).then(function(r){return r.json();}).then(function(d){if(d.success){showAddToCartToast();setTimeout(function(){location.reload();},1500);}else if(d.login_required){window.location.href='login.php';}else{alert(d.message||'Failed to add to cart');}});}
+function addToCart(){var qty=document.getElementById('pd-qty-input').value;var fd=new URLSearchParams();fd.append('action','add');fd.append('product_id','<?php echo $product["id"];?>');fd.append('variant_id',currentVariantId);fd.append('quantity',qty);fd.append('csrf_token',csrfToken);fetch('cart_api.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:fd.toString()}).then(function(r){return r.json();}).then(function(d){if(d.success){showAddToCartToast();setTimeout(function(){location.reload();},1500);}else{alert(d.message||'Failed to add to cart');}});}
 
 // Review Stars
 document.getElementById('review-stars').addEventListener('click',function(e){var star=e.target.closest('i');if(!star)return;var val=parseInt(star.dataset.value);document.getElementById('review-rating-input').value=val;this.querySelectorAll('i').forEach(function(s,i){s.classList.toggle('active',i<val);});});
