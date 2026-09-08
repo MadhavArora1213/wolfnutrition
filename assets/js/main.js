@@ -306,12 +306,14 @@ document.addEventListener('DOMContentLoaded', function() {
             var productId = this.dataset.productId;
             var variantId = this.dataset.variantId;
             var csrf = this.dataset.csrf;
+            var qtyInput = document.getElementById('pd-qty-input');
+            var qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
 
             var formData = new FormData();
             formData.append('action', 'add');
             formData.append('product_id', productId);
             formData.append('variant_id', variantId);
-            formData.append('quantity', 1);
+            formData.append('quantity', qty);
             formData.append('csrf_token', csrf);
 
             fetch('cart_api.php', {

@@ -313,6 +313,12 @@ if (empty($gallery)) $gallery = [$product['image_url']];
                     <?php endif; ?>
                 </button>
             </div>
+            <?php if (!$default_oos): ?>
+            <button class="buy-now-btn" data-product-id="<?php echo $product['id']; ?>" data-variant-id="<?php echo $default_variant['id']; ?>" data-csrf="<?php echo generate_csrf_token(); ?>"
+                style="width:100%; border-radius:12px; font-size:0.95rem; font-weight:700; padding:15px; margin-top:10px; background:linear-gradient(135deg,#2ecc71,#27ae60); color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <i class="fas fa-bolt"></i> Buy Now
+            </button>
+            <?php endif; ?>
             <?php endif; ?>
             <?php endif; ?>
 

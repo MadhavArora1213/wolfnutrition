@@ -460,13 +460,21 @@ try {
                                 <?php if(($prod['total_stock'] ?? 1) <= 0): ?>
                                     <button style="width:100%; padding:11px; font-size:0.82rem; border-radius:12px; font-weight:700; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.35); cursor:not-allowed;" disabled><i class="fas fa-ban"></i> Out of Stock</button>
                                 <?php else: ?>
-                                    <button class="btn-gold card-atc-btn" style="width:100%; padding:11px; font-size:0.82rem; border-radius:12px; font-weight:700;"
-                                        data-product-id="<?php echo $prod['id']; ?>"
-                                        data-variant-id="<?php echo $sel_v['id']; ?>"
-                                        data-csrf="<?php echo generate_csrf_token(); ?>"
-                                        onclick="cardAddToCart(this)">
-                                        <i class="fas fa-shopping-cart"></i> Add to Cart
-                                    </button>
+                                    <div style="display:flex; gap:8px;">
+                                        <button class="btn-gold card-atc-btn" style="flex:1; padding:11px; font-size:0.78rem; border-radius:12px; font-weight:700;"
+                                            data-product-id="<?php echo $prod['id']; ?>"
+                                            data-variant-id="<?php echo $sel_v['id']; ?>"
+                                            data-csrf="<?php echo generate_csrf_token(); ?>"
+                                            onclick="cardAddToCart(this)">
+                                            <i class="fas fa-shopping-cart"></i> Cart
+                                        </button>
+                                        <button class="buy-now-btn" style="flex:1; padding:11px; font-size:0.78rem; border-radius:12px; font-weight:700; background:linear-gradient(135deg,#2ecc71,#27ae60); color:#fff; border:none; cursor:pointer;"
+                                            data-product-id="<?php echo $prod['id']; ?>"
+                                            data-variant-id="<?php echo $sel_v['id']; ?>"
+                                            data-csrf="<?php echo generate_csrf_token(); ?>">
+                                            <i class="fas fa-bolt"></i> Buy Now
+                                        </button>
+                                    </div>
                                 <?php endif; ?>
                             </div>
                         </div>

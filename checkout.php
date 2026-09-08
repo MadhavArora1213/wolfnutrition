@@ -110,14 +110,24 @@ $checkout_error = '';
                 <aside class="summary-sidebar">
                     <h3>Order Summary</h3>
                     
-                    <div style="max-height:180px; overflow-y:auto; border-bottom:1px solid var(--border-color); padding-bottom:15px; margin-bottom:15px;">
-                        <?php foreach ($cart_items as $item): ?>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:0.85rem;">
-                                <div>
-                                    <div style="font-weight:700; color:#fff;"><?php echo htmlspecialchars($item['name']); ?></div>
-                                    <div style="color:var(--text-muted); font-size:0.75rem;"><?php echo htmlspecialchars($item['size']); ?> &times; <?php echo $item['qty']; ?></div>
+                    <div id="checkout-cart-items" style="border-bottom:1px solid var(--border-color); padding-bottom:15px; margin-bottom:15px;">
+                        <?php foreach ($cart_items as $key => $item): ?>
+                            <div class="checkout-item" data-key="<?php echo htmlspecialchars($key); ?>" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; font-size:0.85rem; gap:8px;">
+                                <div style="flex:1; min-width:0;">
+                                    <div style="font-weight:700; color:#fff; font-size:0.82rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo htmlspecialchars($item['name']); ?></div>
+                                    <div style="color:var(--text-muted); font-size:0.7rem; margin-top:2px;"><?php echo htmlspecialchars($item['size']); ?></div>
+                                    <div style="font-weight:700; color:var(--gold-primary); font-size:0.8rem; margin-top:3px;">₹<?php echo number_format($item['price'], 2); ?>/qty</div>
                                 </div>
-                                <span style="font-weight:700;">₹<?php echo number_format($item['price'] * $item['qty'], 2); ?></span>
+                                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0;">
+                                    <div style="display:inline-flex; align-items:center; border:1px solid var(--border-color); border-radius:6px; overflow:hidden;">
+                                        <button type="button" onclick="checkoutUpdateQty('<?php echo htmlspecialchars($key); ?>', <?php echo $item['qty'] - 1; ?>)" style="width:24px; height:24px; border:none; background:transparent; color:#fff; cursor:pointer; font-size:0.75rem;">-</button>
+                                        <span style="width:22px; text-align:center; font-weight:700; font-size:0.75rem;"><?php echo $item['qty']; ?></span>
+                                        <button type="button" onclick="checkoutUpdateQty('<?php echo htmlspecialchars($key); ?>', <?php echo $item['qty'] + 1; ?>)" style="width:24px; height:24px; border:none; background:transparent; color:#fff; cursor:pointer; font-size:0.75rem;">+</button>
+                                    </div>
+                                    <button type="button" onclick="checkoutRemoveItem('<?php echo htmlspecialchars($key); ?>')" style="background:none; border:none; color:var(--danger-color, #e74c3c); font-size:0.68rem; cursor:pointer; padding:0;">
+                                        <i class="fas fa-trash-alt"></i> Remove
+                                    </button>
+                                </div>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -175,6 +185,50 @@ $checkout_error = '';
                 placeOrderBtn.textContent = 'Processing...';
                 form.submit();
             });
+        }
+
+        var checkoutCsrfToken = '<?php echo generate_csrf_token(); ?>';
+
+        function checkoutUpdateQty(key, qty) {
+            if (qty < 1) {
+                checkoutRemoveItem(key);
+                return;
+            }
+            var fd = new URLSearchParams();
+            fd.append('action', 'update');
+            fd.append('key', key);
+            fd.append('qty', qty);
+            fd.append('csrf_token', checkoutCsrfToken);
+
+            fetch('cart_api.php', { method: 'POST', body: fd })
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.success) {
+                        location.reload();
+                    } else {
+                        alert(d.message || 'Update failed');
+                    }
+                })
+                .catch(function() { alert('Network error'); });
+        }
+
+        function checkoutRemoveItem(key) {
+            if (!confirm('Remove this item?')) return;
+            var fd = new URLSearchParams();
+            fd.append('action', 'remove');
+            fd.append('key', key);
+            fd.append('csrf_token', checkoutCsrfToken);
+
+            fetch('cart_api.php', { method: 'POST', body: fd })
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.success) {
+                        location.reload();
+                    } else {
+                        alert(d.message || 'Remove failed');
+                    }
+                })
+                .catch(function() { alert('Network error'); });
         }
 
     </script>
