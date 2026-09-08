@@ -36,16 +36,28 @@ $hero_desc = $category ? htmlspecialchars($category['description']) : 'Explore t
 $hero_stat1 = ['100%', 'Ayurvedic']; $hero_stat2 = ['FSSAI', 'Certified']; $hero_stat3 = ['Free', 'Consult'];
 
 if ($cat_slug === 'liver-detox') {
-    $hero_img = 'assets/images/products/wolftox.png'; $hero_badge = 'Organic Cleansing';
+    $hero_badge = 'Organic Cleansing';
     $hero_title = 'Liver Support & Detox';
     $hero_stat1 = ['60', 'Capsules']; $hero_stat2 = ['Liver', 'Detox']; $hero_stat3 = ['100%', 'Veggie'];
 } elseif ($cat_slug === 'vitality') {
-    $hero_img = 'assets/images/products/wolfpack.png'; $hero_badge = 'Active Performance';
+    $hero_badge = 'Active Performance';
     $hero_stat1 = ['60', 'Capsules']; $hero_stat2 = ['T-Level', 'Booster']; $hero_stat3 = ['Shilajit', 'Pure'];
 } elseif ($is_coming_soon) {
-    $hero_img = 'assets/images/products/wolfpack.png'; $hero_badge = 'Launching Soon';
+    $hero_badge = 'Launching Soon';
     $hero_title = 'Coming Soon'; $hero_desc = 'Next-generation supplements in development. Be the first to experience the future of performance nutrition.';
     $hero_stat1 = ['6', 'Products']; $hero_stat2 = ['Coming', 'Soon']; $hero_stat3 = ['100%', 'Ayurvedic'];
+}
+
+// Fetch hero image from DB (first active product in category)
+if ($category) {
+    try {
+        $stmt_hero = $pdo->prepare("SELECT image_url FROM products WHERE category_id = ? AND is_active = 1 LIMIT 1");
+        $stmt_hero->execute([$category['id']]);
+        $hero_row = $stmt_hero->fetch();
+        if ($hero_row && !empty($hero_row['image_url'])) {
+            $hero_img = $hero_row['image_url'];
+        }
+    } catch (PDOException $e) {}
 }
 ?>
 
@@ -165,7 +177,7 @@ if ($cat_slug === 'liver-detox') {
                 <div class="cat-hero-stat"><div class="cat-hero-stat-num"><?php echo $hero_stat3[0]; ?></div><div class="cat-hero-stat-label"><?php echo $hero_stat3[1]; ?></div></div>
             </div>
         </div>
-        <div class="cat-hero-visual"><img src="<?php echo $hero_img; ?>" alt="<?php echo $hero_title; ?>"></div>
+        <div class="cat-hero-visual"><img src="<?php echo BASE_URL . '/' . htmlspecialchars($hero_img); ?>" alt="<?php echo $hero_title; ?>"></div>
     </div>
 
     <!-- ═══ BENEFITS ═══ -->

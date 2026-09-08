@@ -24,6 +24,22 @@ $stmt_cats = $pdo->prepare("SELECT id, name FROM categories ORDER BY name ASC");
 $stmt_cats->execute();
 $categories = $stmt_cats->fetchAll();
 
+// Handle standalone gallery image delete (AJAX)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_gallery_image']) && !isset($_POST['edit_product'])) {
+    $remove_url = trim($_POST['remove_gallery_image']);
+    $current_gallery = $product['image_gallery'] ?? '';
+    $gallery_arr = array_filter(explode(',', $current_gallery));
+    $gallery_arr = array_filter($gallery_arr, function($v) use ($remove_url) {
+        return trim($v) !== $remove_url;
+    });
+    $new_gallery = implode(',', $gallery_arr);
+    $stmt_rg = $pdo->prepare("UPDATE products SET image_gallery = ? WHERE id = ?");
+    $stmt_rg->execute([$new_gallery, $edit_id]);
+    header('Content-Type: application/json');
+    echo json_encode(['success' => true]);
+    exit();
+}
+
 // Handle Edit Product
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_product'])) {
     $name = trim($_POST['name']);
@@ -312,10 +328,11 @@ $gallery_images = array_filter($gallery_images);
             <?php if (!empty($gallery_images)): ?>
                 <div style="margin-bottom:16px;">
                     <span class="form-label">Current gallery images:</span>
-                    <div class="image-preview-grid">
+                    <div class="image-preview-grid" style="display:flex; flex-wrap:wrap; gap:10px;">
                         <?php foreach ($gallery_images as $g_img): ?>
-                            <div class="image-preview-item">
-                                <img src="../<?php echo htmlspecialchars($g_img); ?>" alt="">
+                            <div class="gallery-thumb-item" style="position:relative; display:inline-block; width:120px; height:120px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; overflow:hidden;" data-path="<?php echo htmlspecialchars($g_img); ?>">
+                                <img src="../<?php echo htmlspecialchars($g_img); ?>" alt="" style="width:100%; height:100%; object-fit:cover;">
+                                <button type="button" onclick="deleteGalleryImage(this)" style="position:absolute; top:4px; right:4px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:24px; height:24px; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;" title="Delete image"><i class="fas fa-times"></i></button>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -434,6 +451,26 @@ $gallery_images = array_filter($gallery_images);
         $('#p-howto').trumbowyg(trumbowygConfig);
         $('#p-disclaimer').trumbowyg(trumbowygConfig);
     });
+    </script>
+
+    <script>
+    function deleteGalleryImage(btn) {
+        if (!confirm('Delete this image?')) return;
+        var item = btn.closest('.gallery-thumb-item');
+        var imgPath = item.getAttribute('data-path');
+        var fd = new FormData();
+        fd.append('remove_gallery_image', imgPath);
+        fd.append('edit_id', '<?php echo $edit_id; ?>');
+        fetch('product_edit.php?id=<?php echo $edit_id; ?>', {
+            method: 'POST',
+            body: fd
+        }).then(function(r) { return r.text(); }).then(function() {
+            item.style.opacity = '0.3';
+            item.style.pointerEvents = 'none';
+            item.style.transform = 'scale(0.9)';
+            item.style.transition = 'all 0.3s ease';
+        });
+    }
     </script>
 
 <?php 

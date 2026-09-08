@@ -21,6 +21,22 @@ $certs = get_certificates();
 $testimonials = get_testimonials(false, 5);
 try { $stmt = $pdo->prepare("SELECT * FROM blog_posts WHERE status = 1 ORDER BY published_at DESC"); $stmt->execute(); $blogs = $stmt->fetchAll(); if (count($blogs) > 3) $blogs = array_slice($blogs, 0, 3); } catch (PDOException $e) { $blogs = []; }
 try { $stmt = $pdo->prepare("SELECT p.*, pv.id as variant_id, pv.price as max_mrp, pv.sale_price as min_price, pv.size_capsules, pv.sku FROM products p JOIN product_variants pv ON p.id = pv.product_id WHERE p.is_active = 0 ORDER BY p.id ASC, pv.is_default DESC"); $stmt->execute(); $coming_soon = $stmt->fetchAll(); } catch (PDOException $e) { $coming_soon = []; }
+
+// Fetch featured product images for Shop By Goal cards
+$goal_vitality_img = 'assets/images/products/wolfpack.png';
+$goal_liver_img = 'assets/images/products/wolftox.png';
+try {
+    $stmt_v = $pdo->prepare("SELECT p.image_url FROM products p JOIN categories c ON p.category_id = c.id WHERE c.slug = 'vitality' AND p.is_active = 1 LIMIT 1");
+    $stmt_v->execute();
+    $row_v = $stmt_v->fetch();
+    if ($row_v && !empty($row_v['image_url'])) $goal_vitality_img = $row_v['image_url'];
+} catch (PDOException $e) {}
+try {
+    $stmt_l = $pdo->prepare("SELECT p.image_url FROM products p JOIN categories c ON p.category_id = c.id WHERE c.slug = 'liver-detox' AND p.is_active = 1 LIMIT 1");
+    $stmt_l->execute();
+    $row_l = $stmt_l->fetch();
+    if ($row_l && !empty($row_l['image_url'])) $goal_liver_img = $row_l['image_url'];
+} catch (PDOException $e) {}
 ?>
 
 <style>
@@ -291,7 +307,7 @@ try { $stmt = $pdo->prepare("SELECT p.*, pv.id as variant_id, pv.price as max_mr
             <!-- Vitality Stack -->
             <a href="category.php?slug=vitality" class="goal-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;position:relative;">
                 <div style="position:absolute;top:0;right:10px;background:var(--gold-gradient);color:#080C10;font-size:0.55rem;font-weight:800;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:1px;z-index:2;">Best Seller</div>
-                <img src="assets/images/products/wolfpack.png" alt="Wolfpack Vitality Stack" style="width:70%;object-fit:contain;filter:drop-shadow(0 20px 50px rgba(212,175,55,0.2));transition:transform 0.4s ease;">
+                <img src="<?php echo BASE_URL . '/' . htmlspecialchars($goal_vitality_img); ?>" alt="Wolfpack Vitality Stack" style="width:70%;object-fit:contain;filter:drop-shadow(0 20px 50px rgba(212,175,55,0.2));transition:transform 0.4s ease;">
                 <div style="width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.35),transparent);margin:18px 0;"></div>
                 <div style="text-align:center;">
                     <div style="font-family:var(--font-heading);font-weight:800;font-size:1.05rem;color:#fff;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Vitality Stack</div>
@@ -303,7 +319,7 @@ try { $stmt = $pdo->prepare("SELECT p.*, pv.id as variant_id, pv.price as max_mr
 
             <!-- Liver Detox -->
             <a href="category.php?slug=liver-detox" class="goal-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;">
-                <img src="assets/images/products/wolftox.png" alt="Wolftox Liver Detox" style="width:70%;object-fit:contain;filter:drop-shadow(0 20px 50px rgba(212,175,55,0.2));transition:transform 0.4s ease;">
+                <img src="<?php echo BASE_URL . '/' . htmlspecialchars($goal_liver_img); ?>" alt="Wolftox Liver Detox" style="width:70%;object-fit:contain;filter:drop-shadow(0 20px 50px rgba(212,175,55,0.2));transition:transform 0.4s ease;">
                 <div style="width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.35),transparent);margin:18px 0;"></div>
                 <div style="text-align:center;">
                     <div style="font-family:var(--font-heading);font-weight:800;font-size:1.05rem;color:#fff;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Liver Detox</div>
@@ -317,8 +333,8 @@ try { $stmt = $pdo->prepare("SELECT p.*, pv.id as variant_id, pv.price as max_mr
             <a href="category.php?slug=all" class="goal-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;position:relative;">
                 <div style="position:absolute;top:0;left:10px;background:rgba(212,175,55,0.15);border:1px solid rgba(212,175,55,0.35);color:var(--gold-primary);font-size:0.55rem;font-weight:800;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:1px;z-index:2;">Save 10%</div>
                 <div style="width:80%;display:flex;align-items:flex-end;justify-content:center;">
-                    <img src="assets/images/products/wolfpack.png" alt="Wolfpack" style="width:48%;object-fit:contain;filter:drop-shadow(0 16px 40px rgba(212,175,55,0.15));transition:transform 0.4s ease;transform:rotate(-5deg) translateX(10px);">
-                    <img src="assets/images/products/wolftox.png" alt="Wolftox" style="width:44%;object-fit:contain;filter:drop-shadow(0 16px 40px rgba(212,175,55,0.15));transition:transform 0.4s ease;transform:rotate(5deg) translateX(-10px);">
+                    <img src="<?php echo BASE_URL . '/' . htmlspecialchars($goal_vitality_img); ?>" alt="Wolfpack" style="width:48%;object-fit:contain;filter:drop-shadow(0 16px 40px rgba(212,175,55,0.15));transition:transform 0.4s ease;transform:rotate(-5deg) translateX(10px);">
+                    <img src="<?php echo BASE_URL . '/' . htmlspecialchars($goal_liver_img); ?>" alt="Wolftox" style="width:44%;object-fit:contain;filter:drop-shadow(0 16px 40px rgba(212,175,55,0.15));transition:transform 0.4s ease;transform:rotate(5deg) translateX(-10px);">
                 </div>
                 <div style="width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.35),transparent);margin:18px 0;"></div>
                 <div style="text-align:center;">
@@ -754,7 +770,6 @@ if (!$featured && !empty($testimonials)) {
                 <h3 style="color:#fff; font-size:1.15rem; font-weight:800; text-transform:uppercase; font-family:var(--font-heading); margin-bottom:6px;">WOLFPACK</h3>
                 <p style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Vitality & Strength</p>
                 <p style="color:var(--gold-primary); font-size:0.8rem; font-weight:600;">60 Veggie Capsules</p>
-                <p style="color:rgba(255,255,255,0.7); font-size:1rem; font-weight:700; margin-top:12px;">₹3,998/-</p>
             </div>
 
             <!-- Plus Connector -->
@@ -770,7 +785,6 @@ if (!$featured && !empty($testimonials)) {
                 <h3 style="color:#fff; font-size:1.15rem; font-weight:800; text-transform:uppercase; font-family:var(--font-heading); margin-bottom:6px;">WOLFTOX</h3>
                 <p style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Liver Support & Detox</p>
                 <p style="color:var(--gold-primary); font-size:0.8rem; font-weight:600;">60 Veggie Capsules</p>
-                <p style="color:rgba(255,255,255,0.7); font-size:1rem; font-weight:700; margin-top:12px;">₹2,498/-</p>
             </div>
 
             <!-- Equals Connector -->
@@ -782,14 +796,12 @@ if (!$featured && !empty($testimonials)) {
             <div class="tilt-card" style="background:linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(8,12,16,0.95) 100%); border:1px solid rgba(212,175,55,0.2); border-radius:20px; padding:32px 28px; text-align:center; position:relative; overflow:hidden; transition:all 0.4s;">
                 <div style="position:absolute; top:-30px; right:-30px; width:120px; height:120px; background:radial-gradient(circle,rgba(212,175,55,0.12) 0%,transparent 70%); pointer-events:none;"></div>
                 <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--gold-gradient);"></div>
-                <span style="display:inline-block; background:var(--gold-gradient); color:#080C10; font-size:0.65rem; font-weight:800; padding:4px 14px; border-radius:16px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:14px;">Save ₹299 (10% OFF)</span>
-                <h3 style="color:#fff; font-size:1.2rem; font-weight:800; text-transform:uppercase; font-family:var(--font-heading); margin-bottom:12px;">Wolf Stack Combo</h3>
-                <div style="margin-bottom:16px;">
-                    <span style="text-decoration:line-through; font-size:0.95rem; color:rgba(255,255,255,0.35); margin-right:6px;">₹2,998</span>
-                    <span style="font-size:2rem; font-weight:800; color:var(--gold-primary); font-family:var(--font-heading);">₹<?php echo number_format($bundle['combo_price'],2); ?></span>
-                </div>
-                <p style="font-size:0.82rem; color:rgba(255,255,255,0.5); margin-bottom:20px;">Full 30-60 Day program. Both formulas, synergized.</p>
-                <button class="btn-gold" id="add-bundle-btn" data-bundle-id="<?php echo $bundle['id']; ?>" style="width:100%; padding:13px; border-radius:12px; font-size:0.88rem; font-weight:700;"><i class="fas fa-cubes"></i> Add Stack to Cart</button>
+                <h3 style="color:#fff; font-size:1.2rem; font-weight:800; text-transform:uppercase; font-family:var(--font-heading); margin-bottom:14px;">Wolf Stack Combo</h3>
+                <p style="font-size:0.82rem; color:rgba(255,255,255,0.5); margin-bottom:24px;">Full 30-60 Day program. Both formulas, synergized.</p>
+                <a href="https://wa.me/919779450455?text=Hi%20Wolf%20Nutrition,%20I%20am%20interested%20in%20the%20Combo%20Offer.%20Please%20share%20the%20details." target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:10px; background:#25D366; color:#fff; padding:13px 28px; border-radius:12px; font-size:0.92rem; font-weight:700; text-decoration:none; transition:all 0.3s;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    Contact for Combo Offer
+                </a>
             </div>
 
         </div>
@@ -810,7 +822,7 @@ if (!$featured && !empty($testimonials)) {
                     <div style="flex:1; display:flex; flex-direction:column; padding:38px 14px 14px 14px;">
                         <div style="display:flex; justify-content:space-between; padding:2px 16px; font-size:0.58rem; color:rgba(255,255,255,0.3); font-weight:700; font-family:sans-serif; margin-bottom:10px;"><span>09:41</span><div style="display:flex; gap:5px; align-items:center;"><i class="fas fa-signal"></i><i class="fas fa-wifi"></i><i class="fas fa-battery-full"></i></div></div>
                         <div style="display:flex; justify-content:space-between; align-items:center; padding:0 14px 8px; border-bottom:1px solid rgba(255,255,255,0.03); margin-bottom:12px;"><i class="fas fa-bars" style="color:var(--gold-primary); font-size:0.8rem;"></i><span style="font-size:0.82rem; font-weight:800; color:#fff; font-family:var(--font-heading);">WOLF <span style="color:var(--gold-primary);">NUTRITION</span></span><div style="position:relative;"><i class="fas fa-shopping-bag" style="color:#fff; font-size:0.8rem;"></i><span style="position:absolute; top:-5px; right:-5px; background:var(--gold-primary); color:#080C10; font-size:0.45rem; width:11px; height:11px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-weight:800;">2</span></div></div>
-                        <div style="height:190px; background:radial-gradient(circle at 50% 50%,rgba(212,175,55,0.12) 0%,transparent 80%); border:1px solid rgba(255,255,255,0.03); border-radius:16px; margin:0 14px 10px; position:relative; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;"><span style="position:absolute; top:10px; left:10px; background:var(--gold-gradient); color:#080C10; font-size:0.5rem; font-weight:800; padding:2px 7px; border-radius:8px; text-transform:uppercase; font-family:var(--font-heading);">Best Seller</span><img src="assets/images/products/wolfpack.png" alt="Wolfpack Vitality Product" style="height:110px; object-fit:contain; filter:drop-shadow(0 12px 20px rgba(8,12,16,0.5)); animation:phoneProductFloat 4s ease-in-out infinite;"><span style="font-size:0.78rem; font-weight:700; color:#fff; margin-top:6px; font-family:var(--font-heading);">WOLFPACK Vitality</span><span style="font-size:0.72rem; font-weight:700; color:var(--gold-primary); margin-top:4px;">Rs.999/-</span><div style="position:absolute; bottom:8px; display:flex; gap:3px;"><div style="width:10px; height:3px; border-radius:2px; background:var(--gold-primary);"></div><div style="width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,0.2);"></div><div style="width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,0.2);"></div></div></div>
+                        <div style="height:190px; background:radial-gradient(circle at 50% 50%,rgba(212,175,55,0.12) 0%,transparent 80%); border:1px solid rgba(255,255,255,0.03); border-radius:16px; margin:0 14px 10px; position:relative; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;"><span style="position:absolute; top:10px; left:10px; background:var(--gold-gradient); color:#080C10; font-size:0.5rem; font-weight:800; padding:2px 7px; border-radius:8px; text-transform:uppercase; font-family:var(--font-heading);">Best Seller</span><img src="assets/images/products/wolfpack.png" alt="Wolfpack Vitality Product" style="height:110px; object-fit:contain; filter:drop-shadow(0 12px 20px rgba(8,12,16,0.5)); animation:phoneProductFloat 4s ease-in-out infinite;"><span style="font-size:0.78rem; font-weight:700; color:#fff; margin-top:6px; font-family:var(--font-heading);">WOLFPACK Vitality</span><span style="font-size:0.72rem; font-weight:700; color:var(--gold-primary); margin-top:4px;">Rs.1,194/-</span><div style="position:absolute; bottom:8px; display:flex; gap:3px;"><div style="width:10px; height:3px; border-radius:2px; background:var(--gold-primary);"></div><div style="width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,0.2);"></div><div style="width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,0.2);"></div></div></div>
                         <div style="font-size:0.65rem; font-weight:800; color:#fff; text-align:left; margin:4px 14px 8px; text-transform:uppercase; letter-spacing:0.5px;">Shop Range</div>
                         <div style="display:flex; justify-content:space-between; padding:0 14px; gap:8px;">
                             <?php foreach([['wolfpack.png','Vitality'],['wolftox.png','Detox'],['wolfpack_wolftox_combo.png','Combos']] as $mc): ?>
@@ -824,20 +836,6 @@ if (!$featured && !empty($testimonials)) {
                             <div style="color:rgba(255,255,255,0.35);"><i class="fas fa-user" style="font-size:0.75rem;"></i><br><span style="font-size:0.45rem; font-weight:700;">Profile</span></div>
                         </div>
                     </div>
-                </div>
-                <!-- Floating Card 1 -->
-                <div style="position:absolute; top:70px; right:-80px; width:210px; background:rgba(18,18,18,0.95); backdrop-filter:blur(16px); border:1px solid var(--gold-primary); border-radius:14px; padding:14px; box-shadow:0 25px 50px rgba(8,12,16,0.8); z-index:15; animation:floatBadge 5s ease-in-out infinite;">
-                    <span style="display:inline-block; background:rgba(212,175,55,0.12); color:var(--gold-primary); font-size:0.55rem; font-weight:800; padding:2px 7px; border-radius:16px; text-transform:uppercase; border:1px solid rgba(212,175,55,0.15); margin-bottom:8px;">Ultimate Offer</span>
-                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;"><img src="assets/images/products/wolftox.png" alt="WolfTox Liver Detox Capsules" style="width:50px; height:50px; object-fit:contain; filter:drop-shadow(0 6px 10px rgba(8,12,16,0.3));"><div><div style="font-size:0.75rem; font-weight:700; color:#fff;">WOLFTOX Detox</div><div style="color:var(--gold-light); font-size:0.6rem; margin-top:2px;"><i class="fas fa-star"></i> 4.9 (24)</div></div></div>
-                    <div style="display:flex; align-items:baseline; gap:5px; margin-bottom:8px;"><span style="font-size:1rem; font-weight:800; color:var(--gold-primary);">₹999</span><span style="font-size:0.7rem; text-decoration:line-through; color:var(--text-muted);">₹1,499</span></div>
-                    <button class="btn-gold" style="width:100%; padding:7px; font-size:0.7rem; font-weight:700; border-radius:8px;" onclick="location.href='product.php?slug=wolftox-liver-support-detox'">Add to Cart</button>
-                </div>
-                <!-- Floating Card 2 -->
-                <div style="position:absolute; bottom:60px; left:-80px; width:220px; background:rgba(18,18,18,0.95); backdrop-filter:blur(16px); border:1px solid rgba(212,175,55,0.25); border-radius:14px; padding:14px; box-shadow:0 25px 50px rgba(8,12,16,0.8); z-index:15; display:flex; flex-direction:column; gap:8px; animation:floatBadge 6s ease-in-out infinite;">
-                    <span style="font-size:0.7rem; font-weight:700; color:var(--gold-primary); text-transform:uppercase; letter-spacing:0.5px;">Goal-focused Plans</span>
-                    <span style="font-size:0.78rem; font-weight:600; color:#fff; line-height:1.3;">Get your first wellness call free!</span>
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:3px;"><img src="assets/images/dietitian_avatar.png" alt="Dietitian" style="width:32px; height:32px; border-radius:50%; border:1.5px solid var(--gold-primary); object-fit:cover;"><div><div style="font-size:0.7rem; color:#fff; font-weight:700;">Shalini Sen</div><div style="font-size:0.55rem; color:var(--text-muted);">Certified Dietitian</div></div></div>
-                    <a href="https://wa.me/919779450455?text=Hi%20Wolf%20Nutrition,%20I%20would%20like%20to%20book%20a%20free%20dietitian%20consultation%20please." target="_blank" rel="noopener noreferrer" class="btn-outline-gold" style="width:100%; text-align:center; padding:7px; font-size:0.7rem; font-weight:700; border-radius:8px; display:block;">Consult Free</a>
                 </div>
             </div>
             <!-- Right Column -->

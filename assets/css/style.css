@@ -2092,7 +2092,7 @@ input:-webkit-autofill:active {
    FOOTER
    ======================================================== */
 footer {
-    background-color: #080C10;
+    background-color: #000000;
     border-top: 1px solid var(--border-color);
     padding: 60px 0 20px 0;
     margin-top: 60px;
@@ -2110,7 +2110,6 @@ footer {
 .footer-about .logo img {
     height: 80px;
     width: auto;
-    filter: brightness(0) invert(1);
 }
 .footer-about p {
     margin-top: 15px;
