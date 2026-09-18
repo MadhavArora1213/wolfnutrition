@@ -95,7 +95,7 @@ if (isset($_GET['toggle_id'])) {
 }
 
 // Fetch all products
-$stmt = $pdo->prepare("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.id ASC");
+$stmt = $pdo->prepare("SELECT p.*, GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR ', ') as category_name FROM products p LEFT JOIN product_categories pc ON p.id = pc.product_id LEFT JOIN categories c ON pc.category_id = c.id GROUP BY p.id ORDER BY p.id ASC");
 $stmt->execute();
 $products = $stmt->fetchAll();
 ?>
@@ -237,10 +237,10 @@ $products = $stmt->fetchAll();
                 <div class="product-header-row" style="display:flex; gap:16px; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.05);">
                     <img src="../<?php echo htmlspecialchars($prod['image_url']); ?>" alt="<?php echo htmlspecialchars($prod['name']); ?>" class="product-img-thumb">
                     <div style="flex:1; min-width:0;">
-                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px; flex-wrap:wrap;">
                             <h3 style="font-size:1.05rem; font-weight:700; color:#fff; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo htmlspecialchars($prod['name']); ?></h3>
                             <?php if ($prod['category_name']): ?>
-                                <span style="background:rgba(212,175,55,0.12); color:#D4AF37; font-size:0.68rem; font-weight:700; padding:3px 8px; border-radius:4px; white-space:nowrap; text-transform:uppercase; letter-spacing:0.4px;"><?php echo htmlspecialchars($prod['category_name']); ?></span>
+                                <span style="background:rgba(212,175,55,0.12); color:#D4AF37; font-size:0.68rem; font-weight:700; padding:3px 8px; border-radius:4px; text-transform:uppercase; letter-spacing:0.4px;"><?php echo htmlspecialchars($prod['category_name']); ?></span>
                             <?php endif; ?>
                         </div>
                         <p style="font-size:0.8rem; color:rgba(255,255,255,0.45); margin:0;">ID: #<?php echo $prod['id']; ?> &middot; <?php echo count($variants); ?> variant<?php echo count($variants) !== 1 ? 's' : ''; ?></p>

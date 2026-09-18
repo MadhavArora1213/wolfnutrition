@@ -15,9 +15,9 @@ if ($cat_slug !== 'all') {
 }
 
 $active_filter = $is_coming_soon ? 0 : 1;
-$sql = "SELECT p.*, dv.price as max_mrp, dv.sale_price as min_price, dv.id as default_variant_id, (SELECT SUM(pv.stock_qty) FROM product_variants pv WHERE pv.product_id = p.id) as total_stock FROM products p JOIN product_variants dv ON p.id = dv.product_id AND dv.is_default = 1 WHERE p.is_active = ?";
+$sql = "SELECT DISTINCT p.*, dv.price as max_mrp, dv.sale_price as min_price, dv.id as default_variant_id, (SELECT SUM(pv.stock_qty) FROM product_variants pv WHERE pv.product_id = p.id) as total_stock FROM products p JOIN product_variants dv ON p.id = dv.product_id AND dv.is_default = 1 LEFT JOIN product_categories pc ON p.id = pc.product_id WHERE p.is_active = ?";
 $params = [$active_filter];
-if ($category) { $sql .= " AND p.category_id = ? "; $params[] = $category['id']; }
+if ($category) { $sql .= " AND pc.category_id = ? "; $params[] = $category['id']; }
 $sql .= " HAVING min_price >= ? AND min_price <= ? ";
 $params[] = $min_price; $params[] = $max_price;
 if ($in_stock) { $sql .= " AND total_stock > 0 "; }
@@ -51,7 +51,7 @@ if ($cat_slug === 'liver-detox') {
 // Fetch hero image from DB (first active product in category)
 if ($category) {
     try {
-        $stmt_hero = $pdo->prepare("SELECT image_url FROM products WHERE category_id = ? AND is_active = 1 LIMIT 1");
+        $stmt_hero = $pdo->prepare("SELECT p.image_url FROM products p JOIN product_categories pc ON p.id = pc.product_id WHERE pc.category_id = ? AND p.is_active = 1 LIMIT 1");
         $stmt_hero->execute([$category['id']]);
         $hero_row = $stmt_hero->fetch();
         if ($hero_row && !empty($hero_row['image_url'])) {

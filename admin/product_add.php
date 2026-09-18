@@ -17,7 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
     $slug = trim($_POST['slug']);
     $short_description = trim($_POST['short_description']);
     $description = trim($_POST['description']);
-    $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
+    $category_ids = isset($_POST['category_ids']) ? array_map('intval', $_POST['category_ids']) : [];
+    $category_ids = array_filter($category_ids);
+    $category_id = !empty($category_ids) ? $category_ids[0] : null;
     $benefits = trim($_POST['benefits']);
     $ingredients = trim($_POST['ingredients']);
     $how_to_use = trim($_POST['how_to_use']);
@@ -83,6 +85,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             $stmt_i->execute([$name, $slug, $short_description, $description, $category_id, $image_url, $image_gallery, $benefits, $ingredients, $how_to_use, $disclaimer, $is_active, $shipping_charges]);
+            $new_product_id = $pdo->lastInsertId();
+
+            // Insert into product_categories junction table
+            if (!empty($category_ids)) {
+                $stmt_pc = $pdo->prepare("INSERT INTO product_categories (product_id, category_id) VALUES (?, ?)");
+                foreach ($category_ids as $cid) {
+                    $stmt_pc->execute([$new_product_id, $cid]);
+                }
+            }
+
             header("Location: products.php?msg=added");
             exit();
         }
@@ -202,9 +214,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px;">
                 <div>
-                    <label class="form-label">Category</label>
-                    <select name="category_id" class="form-input" style="appearance:auto;">
-                        <option value="">-- No Category --</option>
+                    <label class="form-label">Categories (hold Ctrl/Cmd to select multiple)</label>
+                    <select name="category_ids[]" class="form-input" multiple size="5" style="appearance:auto;">
                         <?php foreach ($categories as $cat): ?>
                             <option value="<?php echo $cat['id']; ?>"><?php echo htmlspecialchars($cat['name']); ?></option>
                         <?php endforeach; ?>

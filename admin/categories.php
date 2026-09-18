@@ -8,7 +8,7 @@ $action_msg = '';
 // Handle Delete Category
 if (isset($_GET['delete_id'])) {
     $del_id = (int)$_GET['delete_id'];
-    $stmt_count = $pdo->prepare("SELECT COUNT(id) FROM products WHERE category_id = ?");
+    $stmt_count = $pdo->prepare("SELECT COUNT(DISTINCT product_id) FROM product_categories WHERE category_id = ?");
     $stmt_count->execute([$del_id]);
     $product_count = (int)$stmt_count->fetchColumn();
     
@@ -30,9 +30,9 @@ if (isset($_GET['msg'])) {
 
 // Fetch categories with product count
 $stmt = $pdo->prepare("
-    SELECT c.*, COUNT(p.id) as product_count 
+    SELECT c.*, COUNT(DISTINCT pc.product_id) as product_count 
     FROM categories c 
-    LEFT JOIN products p ON c.id = p.category_id 
+    LEFT JOIN product_categories pc ON c.id = pc.category_id 
     GROUP BY c.id 
     ORDER BY c.display_order ASC
 ");

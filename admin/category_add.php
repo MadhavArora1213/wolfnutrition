@@ -234,7 +234,7 @@ $total_cats = (int)$stmt_total->fetchColumn();
                 <i class="fas fa-list"></i> Existing Categories
             </div>
             <?php
-            $stmt_ex = $pdo->prepare("SELECT c.*, COUNT(p.id) as product_count FROM categories c LEFT JOIN products p ON c.id = p.category_id GROUP BY c.id ORDER BY c.display_order ASC");
+            $stmt_ex = $pdo->prepare("SELECT c.*, COUNT(DISTINCT pc.product_id) as product_count FROM categories c LEFT JOIN product_categories pc ON c.id = pc.category_id GROUP BY c.id ORDER BY c.display_order ASC");
             $stmt_ex->execute();
             $existing = $stmt_ex->fetchAll();
             ?>

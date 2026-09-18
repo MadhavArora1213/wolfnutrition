@@ -24,6 +24,11 @@ $stmt_cats = $pdo->prepare("SELECT id, name FROM categories ORDER BY name ASC");
 $stmt_cats->execute();
 $categories = $stmt_cats->fetchAll();
 
+// Fetch current categories for this product
+$stmt_pc = $pdo->prepare("SELECT category_id FROM product_categories WHERE product_id = ?");
+$stmt_pc->execute([$edit_id]);
+$product_category_ids = $stmt_pc->fetchAll(PDO::FETCH_COLUMN);
+
 // Handle standalone gallery image delete (AJAX)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_gallery_image']) && !isset($_POST['edit_product'])) {
     $remove_url = trim($_POST['remove_gallery_image']);
@@ -46,7 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_product'])) {
     $slug = trim($_POST['slug']);
     $short_description = trim($_POST['short_description']);
     $description = trim($_POST['description']);
-    $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
+    $category_ids = isset($_POST['category_ids']) ? array_map('intval', $_POST['category_ids']) : [];
+    $category_ids = array_filter($category_ids);
+    $category_id = !empty($category_ids) ? $category_ids[0] : null;
     $benefits = trim($_POST['benefits']);
     $ingredients = trim($_POST['ingredients']);
     $how_to_use = trim($_POST['how_to_use']);
@@ -132,6 +139,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_product'])) {
                 WHERE id = ?
             ");
             $stmt_u->execute([$name, $slug, $short_description, $description, $category_id, $image_url, $image_gallery, $benefits, $ingredients, $how_to_use, $disclaimer, $is_active, $shipping_charges, $edit_id]);
+            
+            // Update product_categories junction table
+            $stmt_del = $pdo->prepare("DELETE FROM product_categories WHERE product_id = ?");
+            $stmt_del->execute([$edit_id]);
+            if (!empty($category_ids)) {
+                $stmt_pc = $pdo->prepare("INSERT INTO product_categories (product_id, category_id) VALUES (?, ?)");
+                foreach ($category_ids as $cid) {
+                    $stmt_pc->execute([$edit_id, $cid]);
+                }
+            }
             
             $stmt_p2 = $pdo->prepare("SELECT * FROM products WHERE id = ?");
             $stmt_p2->execute([$edit_id]);
@@ -275,11 +292,10 @@ $gallery_images = array_filter($gallery_images);
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px;">
                 <div>
-                    <label class="form-label">Category</label>
-                    <select name="category_id" class="form-input" style="appearance:auto;">
-                        <option value="">-- No Category --</option>
+                    <label class="form-label">Categories (hold Ctrl/Cmd to select multiple)</label>
+                    <select name="category_ids[]" class="form-input" multiple size="5" style="appearance:auto;">
                         <?php foreach ($categories as $cat): ?>
-                            <option value="<?php echo $cat['id']; ?>" <?php echo ($product['category_id'] == $cat['id']) ? 'selected' : ''; ?>>
+                            <option value="<?php echo $cat['id']; ?>" <?php echo in_array($cat['id'], $product_category_ids) ? 'selected' : ''; ?>>
                                 <?php echo htmlspecialchars($cat['name']); ?>
                             </option>
                         <?php endforeach; ?>

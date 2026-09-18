@@ -4,7 +4,7 @@ try { $stmt = $pdo->prepare("SELECT * FROM categories WHERE is_active = 1 ORDER 
 $categories = [];
 $products_by_category = [];
 foreach ($all_categories as $cat) {
-    $stmt = $pdo->prepare("SELECT p.*, pv.price as max_mrp, pv.sale_price as min_price, pv.id as default_variant_id, (SELECT SUM(pv2.stock_qty) FROM product_variants pv2 WHERE pv2.product_id = p.id) as total_stock FROM products p JOIN product_variants pv ON p.id = pv.product_id WHERE p.category_id = ? AND p.is_active = 1 AND pv.is_default = 1 GROUP BY p.id");
+    $stmt = $pdo->prepare("SELECT DISTINCT p.*, pv.price as max_mrp, pv.sale_price as min_price, pv.id as default_variant_id, (SELECT SUM(pv2.stock_qty) FROM product_variants pv2 WHERE pv2.product_id = p.id) as total_stock FROM products p JOIN product_variants pv ON p.id = pv.product_id JOIN product_categories pc ON p.id = pc.product_id WHERE pc.category_id = ? AND p.is_active = 1 AND pv.is_default = 1 GROUP BY p.id");
     $stmt->execute([$cat['id']]); $products_by_category[$cat['slug']] = $stmt->fetchAll();
     if (!empty($products_by_category[$cat['slug']])) { $categories[] = $cat; }
 }
@@ -26,13 +26,13 @@ try { $stmt = $pdo->prepare("SELECT p.*, pv.id as variant_id, pv.price as max_mr
 $goal_vitality_img = 'assets/images/products/wolfpack.png';
 $goal_liver_img = 'assets/images/products/wolftox.png';
 try {
-    $stmt_v = $pdo->prepare("SELECT p.image_url FROM products p JOIN categories c ON p.category_id = c.id WHERE c.slug = 'vitality' AND p.is_active = 1 LIMIT 1");
+    $stmt_v = $pdo->prepare("SELECT p.image_url FROM products p JOIN product_categories pc ON p.id = pc.product_id JOIN categories c ON pc.category_id = c.id WHERE c.slug = 'vitality' AND p.is_active = 1 LIMIT 1");
     $stmt_v->execute();
     $row_v = $stmt_v->fetch();
     if ($row_v && !empty($row_v['image_url'])) $goal_vitality_img = $row_v['image_url'];
 } catch (PDOException $e) {}
 try {
-    $stmt_l = $pdo->prepare("SELECT p.image_url FROM products p JOIN categories c ON p.category_id = c.id WHERE c.slug = 'liver-detox' AND p.is_active = 1 LIMIT 1");
+    $stmt_l = $pdo->prepare("SELECT p.image_url FROM products p JOIN product_categories pc ON p.id = pc.product_id JOIN categories c ON pc.category_id = c.id WHERE c.slug = 'liver-detox' AND p.is_active = 1 LIMIT 1");
     $stmt_l->execute();
     $row_l = $stmt_l->fetch();
     if ($row_l && !empty($row_l['image_url'])) $goal_liver_img = $row_l['image_url'];

@@ -3,7 +3,7 @@ require_once __DIR__ . '/includes/header.php';
 $slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
 if (empty($slug)) { header("Location: index.php"); exit(); }
 
-$stmt = $pdo->prepare("SELECT p.*, c.name as category_name, c.slug as category_slug FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.slug = ?");
+$stmt = $pdo->prepare("SELECT p.*, GROUP_CONCAT(DISTINCT c.name ORDER BY c.name SEPARATOR ', ') as category_name, GROUP_CONCAT(DISTINCT c.slug ORDER BY c.name SEPARATOR ',') as category_slug FROM products p LEFT JOIN product_categories pc ON p.id = pc.product_id LEFT JOIN categories c ON pc.category_id = c.id WHERE p.slug = ? GROUP BY p.id");
 $stmt->execute([$slug]); $product = $stmt->fetch();
 if (!$product) { header("Location: index.php"); exit(); }
 $is_coming_soon = !$product['is_active'];
@@ -31,8 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
     else { $pdo->prepare("INSERT INTO reviews (product_id,user_id,user_name,rating,title,review_text,is_approved) VALUES (?,?,?,?, ?,?,0)")->execute([$product['id'],$uid,$rn,$rs,$rt,$rb]); $review_success = "Review submitted! Pending approval."; }
 }
 
-$stmt = $pdo->prepare("SELECT p.*, dv.price as max_mrp, dv.sale_price as min_price, dv.id as default_variant_id FROM products p JOIN product_variants dv ON p.id = dv.product_id AND dv.is_default = 1 WHERE p.category_id = ? AND p.id != ? AND p.is_active = 1 LIMIT 3");
-$stmt->execute([$product['category_id'], $product['id']]); $related = $stmt->fetchAll();
+$primary_cat = $pdo->prepare("SELECT category_id FROM product_categories WHERE product_id = ? LIMIT 1");
+$primary_cat->execute([$product['id']]);
+$primary_cat_id = $primary_cat->fetchColumn();
+
+$stmt = $pdo->prepare("SELECT p.*, dv.price as max_mrp, dv.sale_price as min_price, dv.id as default_variant_id FROM products p JOIN product_variants dv ON p.id = dv.product_id AND dv.is_default = 1 JOIN product_categories pc ON p.id = pc.product_id WHERE pc.category_id = ? AND p.id != ? AND p.is_active = 1 GROUP BY p.id LIMIT 3");
+$stmt->execute([$primary_cat_id, $product['id']]); $related = $stmt->fetchAll();
 
 $gallery = array_filter(explode(',', $product['image_gallery']));
 if (empty($gallery)) $gallery = [$product['image_url']];

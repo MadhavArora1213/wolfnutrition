@@ -51,12 +51,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_category'])) {
 }
 
 // Get product count in this category
-$stmt_count = $pdo->prepare("SELECT COUNT(id) FROM products WHERE category_id = ?");
+$stmt_count = $pdo->prepare("SELECT COUNT(DISTINCT pc.product_id) FROM product_categories pc WHERE pc.category_id = ?");
 $stmt_count->execute([$edit_id]);
 $product_count = (int)$stmt_count->fetchColumn();
 
 // Get products in this category
-$stmt_products = $pdo->prepare("SELECT id, name, slug, is_active FROM products WHERE category_id = ? ORDER BY name ASC");
+$stmt_products = $pdo->prepare("SELECT DISTINCT p.id, p.name, p.slug, p.is_active FROM products p JOIN product_categories pc ON p.id = pc.product_id WHERE pc.category_id = ? ORDER BY p.name ASC");
 $stmt_products->execute([$edit_id]);
 $cat_products = $stmt_products->fetchAll();
 ?>
