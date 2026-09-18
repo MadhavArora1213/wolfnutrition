@@ -1092,6 +1092,19 @@ function cardVariantChange(select) {
         }
     }
 
+    // Update Buy Now button
+    var bnow = card.querySelector('.buy-now-btn');
+    if (bnow) {
+        bnow.setAttribute('data-variant-id', vid);
+        if (oos) {
+            bnow.disabled = true;
+            bnow.style.cssText = 'flex:1;padding:11px;font-size:0.78rem;border-radius:12px;font-weight:700;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.35);cursor:not-allowed;';
+        } else {
+            bnow.disabled = false;
+            bnow.style.cssText = 'flex:1;padding:11px;font-size:0.78rem;border-radius:12px;font-weight:700;background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff;border:none;cursor:pointer;';
+        }
+    }
+
     // Highlight the select border on change
     select.style.borderColor = 'rgba(212,175,55,0.6)';
     setTimeout(function(){ select.style.borderColor = 'rgba(212,175,55,0.25)'; }, 600);

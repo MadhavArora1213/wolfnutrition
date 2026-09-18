@@ -492,15 +492,14 @@ document.getElementById('main-product-image').addEventListener('mouseleave',func
 var currentVariantId=<?php echo $default_variant['id']; ?>;
 function selectVariant(el,vid,sale,mrp){
     var stock=parseInt(el.dataset.stock)||0;
-    if(stock<=0) return; // don't select OOS variants
+    if(stock<=0) return;
     document.querySelectorAll('.pd-variant').forEach(v=>v.classList.remove('active'));
     el.classList.add('active');
     currentVariantId=vid;
     document.getElementById('main-sale').textContent='₹'+Number(sale).toLocaleString('en-IN',{minimumFractionDigits:2});
     document.getElementById('main-mrp').textContent='MRP ₹'+Number(mrp).toLocaleString('en-IN',{minimumFractionDigits:2});
-    // update button
+    // update Add to Cart button
     var btn=document.getElementById('pd-atc-btn');
-    var qtyWrap=document.getElementById('pd-qty-wrap');
     if(btn){
         if(stock>0){
             btn.disabled=false;
@@ -512,6 +511,9 @@ function selectVariant(el,vid,sale,mrp){
             btn.innerHTML='<i class="fas fa-ban"></i> Out of Stock';
         }
     }
+    // update Buy Now button
+    var bnow=document.querySelector('.buy-now-btn');
+    if(bnow) bnow.setAttribute('data-variant-id', vid);
 }
 
 // Qty
