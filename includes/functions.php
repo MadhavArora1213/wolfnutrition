@@ -406,6 +406,62 @@ function get_active_bundles() {
     return $stmt->fetchAll();
 }
 
+// Fetch active bundles for a category (null = uncategorized only, false = all)
+function get_bundles_for_category($category_id = false) {
+    global $pdo;
+    $sql = "SELECT * FROM bundles WHERE status = 1";
+    $params = [];
+    if ($category_id !== false) {
+        if ($category_id === null) {
+            $sql .= " AND category_id IS NULL";
+        } else {
+            $sql .= " AND category_id = ?";
+            $params[] = (int)$category_id;
+        }
+    }
+    $sql .= " ORDER BY display_order ASC, id ASC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $bundles = $stmt->fetchAll();
+    foreach ($bundles as &$b) {
+        $b['items'] = get_bundle_items_detail((int)$b['id']);
+        $b['individual_total'] = 0.0;
+        foreach ($b['items'] as $it) {
+            $b['individual_total'] += (float)$it['price'];
+        }
+        $b['savings'] = max(0, $b['individual_total'] - (float)$b['combo_price']);
+    }
+    unset($b);
+    return $bundles;
+}
+
+// Bundle line items with product image/name for front-end display
+function get_bundle_items_detail($bundle_id) {
+    global $pdo;
+    $stmt = $pdo->prepare("
+        SELECT bi.id as line_id, p.id as product_id, p.name, p.slug, p.image_url,
+               pv.size_capsules, pv.sale_price, pv.price, pv.stock_qty
+        FROM bundle_items bi
+        JOIN products p ON bi.product_id = p.id
+        JOIN product_variants pv ON bi.variant_id = pv.id
+        WHERE bi.bundle_id = ?
+        ORDER BY bi.id ASC
+    ");
+    $stmt->execute([(int)$bundle_id]);
+    return $stmt->fetchAll();
+}
+
+// Group active bundles by category_id: [category_id => bundles[]], 0 = uncategorized
+function get_bundles_grouped_by_category() {
+    $bundles = get_bundles_for_category(false);
+    $grouped = [];
+    foreach ($bundles as $b) {
+        $key = (!empty($b['category_id'])) ? (int)$b['category_id'] : 0;
+        $grouped[$key][] = $b;
+    }
+    return $grouped;
+}
+
 // --------------------------------------------------------
 // PINCODE ESTIMATOR
 // --------------------------------------------------------

@@ -3,11 +3,17 @@ require_once __DIR__ . '/includes/header.php';
 try { $stmt = $pdo->prepare("SELECT * FROM categories WHERE is_active = 1 ORDER BY display_order ASC"); $stmt->execute(); $all_categories = $stmt->fetchAll(); } catch (PDOException $e) { $all_categories = []; }
 $categories = [];
 $products_by_category = [];
+$combos_by_category = [];
+try { $combos_by_category = get_bundles_grouped_by_category(); } catch (Exception $e) { $combos_by_category = []; }
 foreach ($all_categories as $cat) {
-    $stmt = $pdo->prepare("SELECT DISTINCT p.*, pv.price as max_mrp, pv.sale_price as min_price, pv.id as default_variant_id, (SELECT SUM(pv2.stock_qty) FROM product_variants pv2 WHERE pv2.product_id = p.id) as total_stock FROM products p JOIN product_variants pv ON p.id = pv.product_id JOIN product_categories pc ON p.id = pc.product_id WHERE pc.category_id = ? AND p.is_active = 1 AND pv.is_default = 1 GROUP BY p.id");
+    $stmt = $pdo->prepare("SELECT DISTINCT p.*, COALESCE(dv.price, 0) as max_mrp, COALESCE(dv.sale_price, 0) as min_price, dv.id as default_variant_id, COALESCE((SELECT SUM(pv2.stock_qty) FROM product_variants pv2 WHERE pv2.product_id = p.id), 0) as total_stock FROM products p LEFT JOIN product_variants dv ON p.id = dv.product_id AND dv.is_default = 1 LEFT JOIN product_categories pc ON p.id = pc.product_id WHERE pc.category_id = ? AND p.is_active = 1 GROUP BY p.id");
     $stmt->execute([$cat['id']]); $products_by_category[$cat['slug']] = $stmt->fetchAll();
-    if (!empty($products_by_category[$cat['slug']])) { $categories[] = $cat; }
+    $cat_combos = $combos_by_category[(int)$cat['id']] ?? [];
+    $combos_by_category[$cat['slug']] = $cat_combos;
+    if (!empty($products_by_category[$cat['slug']]) || !empty($cat_combos)) { $categories[] = $cat; }
 }
+// Uncategorized combos (no category assigned) — show in an "All / Combos" tab if products exist elsewhere
+$uncategorized_combos = $combos_by_category[0] ?? [];
 // Fetch all variants for every product (for card dropdowns)
 $all_product_variants = [];
 try {
@@ -16,7 +22,18 @@ try {
         $all_product_variants[$v['product_id']][] = $v;
     }
 } catch (PDOException $e) { $all_product_variants = []; }
-try { $stmt = $pdo->prepare("SELECT * FROM bundles WHERE status = 1 LIMIT 1"); $stmt->execute(); $bundle = $stmt->fetch(); } catch (PDOException $e) { $bundle = null; }
+try { $stmt = $pdo->prepare("SELECT * FROM bundles WHERE status = 1 ORDER BY display_order ASC"); $stmt->execute(); $all_active_bundles = $stmt->fetchAll(); $bundle = $all_active_bundles[0] ?? null; } catch (PDOException $e) { $all_active_bundles = []; $bundle = null; }
+// Featured bundles for homepage combo section (top 3 active)
+$featured_bundles = [];
+if (!empty($all_active_bundles)) {
+    foreach (array_slice($all_active_bundles, 0, 3) as $fb) {
+        $fb['items'] = get_bundle_items_detail((int)$fb['id']);
+        $fb['individual_total'] = 0.0;
+        foreach ($fb['items'] as $it) { $fb['individual_total'] += (float)$it['price']; }
+        $fb['savings'] = max(0, $fb['individual_total'] - (float)$fb['combo_price']);
+        $featured_bundles[] = $fb;
+    }
+}
 $certs = get_certificates();
 $testimonials = get_testimonials(false, 5);
 try { $stmt = $pdo->prepare("SELECT * FROM blog_posts WHERE status = 1 ORDER BY published_at DESC"); $stmt->execute(); $blogs = $stmt->fetchAll(); if (count($blogs) > 3) $blogs = array_slice($blogs, 0, 3); } catch (PDOException $e) { $blogs = []; }
@@ -392,6 +409,64 @@ try {
         <!-- Product Tabs -->
         <?php foreach ($categories as $i => $cat): ?>
                 <div id="cat-<?php echo $cat['slug']; ?>" class="tab-pane <?php echo $i===0?'active':''; ?>">
+                <?php
+                $prods = $products_by_category[$cat['slug']] ?? [];
+                $cat_combos = $combos_by_category[$cat['slug']] ?? [];
+                ?>
+                <?php if (!empty($cat_combos)): ?>
+                <div style="margin-bottom:28px;">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                        <span style="display:inline-block; font-size:0.65rem; font-weight:800; letter-spacing:2px; color:var(--gold-primary); text-transform:uppercase; background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.18); padding:5px 14px; border-radius:20px;">Combo Offer</span>
+                        <span style="font-size:0.85rem; color:rgba(255,255,255,0.45);">Save more when you stack</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:24px;">
+                        <?php foreach ($cat_combos as $combo): ?>
+                        <div class="product-card tilt-card spotlight-card combo-offer-card" style="background:linear-gradient(160deg,rgba(212,175,55,0.07) 0%,rgba(255,255,255,0.03) 100%); border:1px solid rgba(212,175,55,0.22); border-radius:20px; overflow:hidden; position:relative;">
+                            <?php if (!empty($combo['discount_percent']) && $combo['discount_percent'] > 0): ?>
+                                <span class="badge-discount" style="position:absolute; top:14px; left:14px; z-index:3;">-<?php echo (int)$combo['discount_percent']; ?>% OFF</span>
+                            <?php elseif (!empty($combo['savings']) && $combo['savings'] > 0): ?>
+                                <span class="badge-discount" style="position:absolute; top:14px; left:14px; z-index:3;">SAVE ₹<?php echo number_format($combo['savings'], 0); ?></span>
+                            <?php endif; ?>
+                            <span style="position:absolute; top:14px; right:14px; z-index:3; font-size:0.6rem; font-weight:800; letter-spacing:1.5px; background:var(--gold-gradient); color:#080C10; padding:4px 10px; border-radius:20px; text-transform:uppercase;">Combo</span>
+                            <div class="tilt-shine"></div>
+                            <div style="height:200px; background:radial-gradient(circle at center,rgba(212,175,55,0.1) 0%,rgba(8,12,16,0.95) 80%); padding:16px; display:flex; align-items:center; justify-content:center; gap:8px; position:relative;">
+                                <?php $combo_imgs = array_slice(array_filter(array_column($combo['items'] ?? [], 'image_url')), 0, 2); ?>
+                                <?php if (!empty($combo['banner_image'])): ?>
+                                    <img src="<?php echo htmlspecialchars($combo['banner_image']); ?>" alt="<?php echo htmlspecialchars($combo['title']); ?>" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
+                                <?php elseif (!empty($combo_imgs)): ?>
+                                    <?php foreach ($combo_imgs as $ci => $cimg): ?>
+                                        <?php if ($ci > 0): ?><span style="color:var(--gold-primary); font-weight:800; font-size:1.4rem;">+</span><?php endif; ?>
+                                        <img src="<?php echo htmlspecialchars($cimg); ?>" alt="" style="height:140px; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                            <div style="padding:20px;">
+                                <h3 style="font-size:0.95rem; color:#fff; margin-bottom:8px; font-family:var(--font-heading); font-weight:700; line-height:1.3;"><?php echo htmlspecialchars($combo['title']); ?></h3>
+                                <?php if (!empty($combo['items'])): ?>
+                                <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px;">
+                                    <?php foreach ($combo['items'] as $ci2 => $cit): ?>
+                                        <span style="font-size:0.65rem; color:rgba(255,255,255,0.55); background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); padding:3px 8px; border-radius:6px;"><?php echo htmlspecialchars(mb_strimwidth($cit['name'], 0, 28, '…')); ?></span>
+                                    <?php endforeach; ?>
+                                </div>
+                                <?php endif; ?>
+                                <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:14px;">
+                                    <span style="font-size:1.25rem; font-weight:800; color:var(--gold-primary); font-family:var(--font-heading);">₹<?php echo number_format((float)$combo['combo_price'],2); ?></span>
+                                    <?php if ($combo['individual_total'] > 0 && $combo['individual_total'] > (float)$combo['combo_price']): ?>
+                                        <span style="font-size:0.82rem; color:rgba(255,255,255,0.35); text-decoration:line-through;">MRP ₹<?php echo number_format($combo['individual_total'],2); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                                <button class="btn-gold combo-add-btn" style="width:100%; padding:11px; font-size:0.8rem; border-radius:12px; font-weight:700;"
+                                    data-bundle-id="<?php echo (int)$combo['id']; ?>"
+                                    data-csrf="<?php echo generate_csrf_token(); ?>">
+                                    <i class="fas fa-layer-group"></i> Add Combo to Cart
+                                </button>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
                 <div class="product-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:24px;">
                     <?php
                     $prods = $products_by_category[$cat['slug']] ?? [];
@@ -757,61 +832,62 @@ if (!$featured && !empty($testimonials)) {
 <?php endif; ?>
 
 <!-- ═══ COMBO BUNDLE ═══ -->
-<?php if ($bundle): ?>
+<?php if (!empty($featured_bundles)): ?>
 <section style="padding:60px 0; position:relative; z-index:2; background:linear-gradient(180deg,rgba(212,175,55,0.04) 0%,rgba(212,175,55,0.02) 100%);">
     <div class="container">
         <!-- Section Header -->
         <div style="text-align:center; margin-bottom:45px;">
             <span style="display:inline-block; font-size:0.65rem; font-weight:800; letter-spacing:2.5px; color:var(--gold-primary); text-transform:uppercase; margin-bottom:12px; background:rgba(212,175,55,0.06); border:1px solid rgba(212,175,55,0.12); padding:5px 16px; border-radius:20px;">Combo Offer</span>
             <div style="font-size:clamp(1.8rem,4vw,2.8rem); font-family:var(--font-heading); font-weight:800; color:#fff; text-transform:uppercase; margin-bottom:10px;">Build Your Wellness Stack</div>
-            <p style="font-size:1rem; color:rgba(255,255,255,0.5);">Combined power for peak testosterone & total liver detox</p>
+            <p style="font-size:1rem; color:rgba(255,255,255,0.5);">Combined power for peak performance — save more when you stack</p>
         </div>
 
-        <!-- Bundle Grid -->
-        <div style="display:grid; grid-template-columns:1fr auto 1fr auto 1.3fr; gap:24px; align-items:stretch;">
-
-            <!-- Product 1 -->
-            <div class="tilt-card" style="background:rgba(255,255,255,0.02); border:1px solid rgba(212,175,55,0.1); border-radius:20px; padding:32px 24px; text-align:center; position:relative; overflow:hidden; transition:all 0.4s;">
-                <div style="display:flex; justify-content:center; margin-bottom:18px;">
-                    <img src="assets/images/products/wolfpack.png" alt="Wolfpack Vitality & Strength Capsules" style="height:170px; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
+        <!-- Featured Bundle Cards -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:24px;">
+            <?php foreach ($featured_bundles as $fb): ?>
+            <div class="tilt-card spotlight-card" style="background:linear-gradient(160deg,rgba(212,175,55,0.08) 0%,rgba(8,12,16,0.95) 100%); border:1px solid rgba(212,175,55,0.22); border-radius:20px; overflow:hidden; position:relative; transition:all 0.4s; display:flex; flex-direction:column;">
+                <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--gold-gradient); z-index:2;"></div>
+                <?php if (!empty($fb['discount_percent']) && $fb['discount_percent'] > 0): ?>
+                    <span style="position:absolute; top:14px; left:14px; z-index:3; font-size:0.65rem; font-weight:800; background:var(--gold-primary); color:#080C10; padding:4px 12px; border-radius:20px;">-<?php echo (int)$fb['discount_percent']; ?>% OFF</span>
+                <?php elseif (!empty($fb['savings']) && $fb['savings'] > 0): ?>
+                    <span style="position:absolute; top:14px; left:14px; z-index:3; font-size:0.65rem; font-weight:800; background:var(--gold-primary); color:#080C10; padding:4px 12px; border-radius:20px;">SAVE ₹<?php echo number_format($fb['savings'], 0); ?></span>
+                <?php endif; ?>
+                <div class="tilt-shine"></div>
+                <div style="height:200px; background:radial-gradient(circle at center,rgba(212,175,55,0.12) 0%,rgba(8,12,16,0.9) 80%); padding:20px; display:flex; align-items:center; justify-content:center; gap:10px;">
+                    <?php $fb_imgs = array_slice(array_filter(array_column($fb['items'] ?? [], 'image_url')), 0, 3); ?>
+                    <?php if (!empty($fb['banner_image'])): ?>
+                        <img src="<?php echo htmlspecialchars($fb['banner_image']); ?>" alt="<?php echo htmlspecialchars($fb['title']); ?>" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
+                    <?php elseif (!empty($fb_imgs)): ?>
+                        <?php foreach ($fb_imgs as $fi => $fimg): ?>
+                            <?php if ($fi > 0): ?><span style="color:var(--gold-primary); font-weight:800; font-size:1.5rem;">+</span><?php endif; ?>
+                            <img src="<?php echo htmlspecialchars($fimg); ?>" alt="" style="height:150px; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
-                <h3 style="color:#fff; font-size:1.15rem; font-weight:800; text-transform:uppercase; font-family:var(--font-heading); margin-bottom:6px;">WOLFPACK</h3>
-                <p style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Vitality & Strength</p>
-                <p style="color:var(--gold-primary); font-size:0.8rem; font-weight:600;">60 Veggie Capsules</p>
-            </div>
-
-            <!-- Plus Connector -->
-            <div style="display:flex; align-items:center; justify-content:center;">
-                <div style="width:50px; height:50px; border-radius:50%; background:var(--gold-gradient); display:flex; align-items:center; justify-content:center; color:#080C10; font-size:1.5rem; font-weight:800; box-shadow:0 8px 20px rgba(212,175,55,0.25);">+</div>
-            </div>
-
-            <!-- Product 2 -->
-            <div class="tilt-card" style="background:rgba(255,255,255,0.02); border:1px solid rgba(212,175,55,0.1); border-radius:20px; padding:32px 24px; text-align:center; position:relative; overflow:hidden; transition:all 0.4s;">
-                <div style="display:flex; justify-content:center; margin-bottom:18px;">
-                    <img src="assets/images/products/wolftox.png" alt="WolfTox Liver Support & Detox Capsules" style="height:170px; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
+                <div style="padding:24px; display:flex; flex-direction:column; flex:1;">
+                    <h3 style="color:#fff; font-size:1.1rem; font-weight:800; text-transform:uppercase; font-family:var(--font-heading); margin-bottom:10px; line-height:1.3;"><?php echo htmlspecialchars($fb['title']); ?></h3>
+                    <?php if (!empty($fb['items'])): ?>
+                    <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px;">
+                        <?php foreach ($fb['items'] as $fit): ?>
+                            <span style="font-size:0.65rem; color:rgba(255,255,255,0.55); background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); padding:3px 8px; border-radius:6px;"><?php echo htmlspecialchars(mb_strimwidth($fit['name'], 0, 30, '…')); ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                    <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:16px; margin-top:auto;">
+                        <span style="font-size:1.5rem; font-weight:800; color:var(--gold-primary); font-family:var(--font-heading);">₹<?php echo number_format((float)$fb['combo_price'],2); ?></span>
+                        <?php if ($fb['individual_total'] > 0 && $fb['individual_total'] > (float)$fb['combo_price']): ?>
+                            <span style="font-size:0.85rem; color:rgba(255,255,255,0.35); text-decoration:line-through;">₹<?php echo number_format($fb['individual_total'],2); ?></span>
+                            <span style="font-size:0.7rem; font-weight:700; color:#4ade80; background:rgba(74,222,128,0.1); padding:2px 8px; border-radius:10px;">-<?php echo round((1 - ((float)$fb['combo_price'] / $fb['individual_total'])) * 100); ?>%</span>
+                        <?php endif; ?>
+                    </div>
+                    <button class="btn-gold combo-add-btn" style="width:100%; padding:13px; font-size:0.88rem; border-radius:12px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;"
+                        data-bundle-id="<?php echo (int)$fb['id']; ?>"
+                        data-csrf="<?php echo generate_csrf_token(); ?>">
+                        <i class="fas fa-layer-group"></i> Add Combo to Cart
+                    </button>
                 </div>
-                <h3 style="color:#fff; font-size:1.15rem; font-weight:800; text-transform:uppercase; font-family:var(--font-heading); margin-bottom:6px;">WOLFTOX</h3>
-                <p style="color:var(--text-muted); font-size:0.82rem; margin-bottom:4px;">Liver Support & Detox</p>
-                <p style="color:var(--gold-primary); font-size:0.8rem; font-weight:600;">60 Veggie Capsules</p>
             </div>
-
-            <!-- Equals Connector -->
-            <div style="display:flex; align-items:center; justify-content:center;">
-                <div style="width:50px; height:50px; border-radius:50%; background:var(--gold-gradient); display:flex; align-items:center; justify-content:center; color:#080C10; font-size:1.5rem; font-weight:800; box-shadow:0 8px 20px rgba(212,175,55,0.25);">=</div>
-            </div>
-
-            <!-- Combo Result -->
-            <div class="tilt-card" style="background:linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(8,12,16,0.95) 100%); border:1px solid rgba(212,175,55,0.2); border-radius:20px; padding:32px 28px; text-align:center; position:relative; overflow:hidden; transition:all 0.4s;">
-                <div style="position:absolute; top:-30px; right:-30px; width:120px; height:120px; background:radial-gradient(circle,rgba(212,175,55,0.12) 0%,transparent 70%); pointer-events:none;"></div>
-                <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--gold-gradient);"></div>
-                <h3 style="color:#fff; font-size:1.2rem; font-weight:800; text-transform:uppercase; font-family:var(--font-heading); margin-bottom:14px;">Wolf Stack Combo</h3>
-                <p style="font-size:0.82rem; color:rgba(255,255,255,0.5); margin-bottom:24px;">Full 30-60 Day program. Both formulas, synergized.</p>
-                <a href="https://wa.me/919779450455?text=Hi%20Wolf%20Nutrition,%20I%20am%20interested%20in%20the%20Combo%20Offer.%20Please%20share%20the%20details." target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:10px; background:#25D366; color:#fff; padding:13px 28px; border-radius:12px; font-size:0.92rem; font-weight:700; text-decoration:none; transition:all 0.3s;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                    Contact for Combo Offer
-                </a>
-            </div>
-
+            <?php endforeach; ?>
         </div>
     </div>
 </section>

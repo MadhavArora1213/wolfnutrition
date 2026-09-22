@@ -271,31 +271,60 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Add Bundle Combo Pack
+    // Add Bundle Combo Pack (by element id)
     const addBundleBtn = document.getElementById('add-bundle-btn');
     if (addBundleBtn) {
         addBundleBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            const bundleId = this.dataset.bundleId;
-            const formData = new FormData();
-            formData.append('action', 'add_bundle');
-            formData.append('bundle_id', bundleId);
-            formData.append('quantity', 1);
+            addBundleToCart(this, this.dataset.bundleId);
+        });
+    }
 
-            fetch('cart_api.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    updateCartCountBadge(data.cart_count);
-                    openCart();
-                } else {
-                    alert(data.message || 'Combo is currently out of stock.');
-                }
-            })
-            .catch(err => console.error('Error adding bundle:', err));
+    // Generic combo add-to-cart buttons (homepage tabs, category page, combo section)
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.combo-add-btn');
+        if (!btn) return;
+        e.preventDefault();
+        addBundleToCart(btn, btn.dataset.bundleId);
+    });
+
+    function addBundleToCart(btn, bundleId) {
+        if (!bundleId || btn.disabled) return;
+        const csrfToken = btn.dataset.csrf || window.__csrfToken || '';
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+
+        const formData = new FormData();
+        formData.append('action', 'add_bundle');
+        formData.append('bundle_id', bundleId);
+        formData.append('quantity', 1);
+        formData.append('csrf_token', csrfToken);
+
+        fetch('cart_api.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                updateCartCountBadge(data.cart_count);
+                openCart();
+                btn.innerHTML = '<i class="fas fa-check"></i> Added!';
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }, 2000);
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                alert(data.message || 'Combo is currently out of stock.');
+            }
+        })
+        .catch(err => {
+            console.error('Error adding bundle:', err);
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
         });
     }
 

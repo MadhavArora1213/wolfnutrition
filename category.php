@@ -29,6 +29,17 @@ switch ($sort) {
 }
 try { $stmt = $pdo->prepare($sql); $stmt->execute($params); $products = $stmt->fetchAll(); } catch (PDOException $e) { $products = []; }
 
+// Active combos for this category (all active combos when viewing "all")
+$category_combos = [];
+try {
+    if ($category) {
+        $category_combos = get_bundles_for_category((int)$category['id']);
+    } elseif ($cat_slug === 'all') {
+        $category_combos = get_bundles_for_category(false);
+    }
+} catch (Exception $e) { $category_combos = []; }
+$total_listing_count = count($products) + count($category_combos);
+
 $hero_img = 'assets/images/products/wolfpack_shoot.png';
 $hero_badge = 'Wolf Nutrition Stacks';
 $hero_title = $category ? htmlspecialchars($category['name']) : 'All Supplements';
@@ -51,8 +62,8 @@ if ($cat_slug === 'liver-detox') {
 // Fetch hero image from DB (first active product in category)
 if ($category) {
     try {
-        $stmt_hero = $pdo->prepare("SELECT p.image_url FROM products p WHERE p.category_id = ? AND p.is_active = 1 LIMIT 1");
-        $stmt_hero->execute([$category['id']]);
+        $stmt_hero = $pdo->prepare("SELECT p.image_url FROM products p LEFT JOIN product_categories pc ON p.id = pc.product_id WHERE (pc.category_id = ? OR p.category_id = ?) AND p.is_active = 1 ORDER BY p.id ASC LIMIT 1");
+        $stmt_hero->execute([$category['id'], $category['id']]);
         $hero_row = $stmt_hero->fetch();
         if ($hero_row && !empty($hero_row['image_url'])) {
             $hero_img = $hero_row['image_url'];
@@ -238,10 +249,66 @@ if ($category) {
 
         <!-- Products -->
         <div>
-            <?php if (!empty($products)): ?>
+            <?php if ($total_listing_count > 0): ?>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding:14px 20px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:12px;">
-                    <p style="font-size:0.92rem; color:rgba(255,255,255,0.6); margin:0;">Showing <strong style="color:var(--gold-primary); font-size:1.05rem;"><?php echo count($products); ?></strong> product<?php echo count($products)>1?'s':''; ?></p>
+                    <p style="font-size:0.92rem; color:rgba(255,255,255,0.6); margin:0;">Showing <strong style="color:var(--gold-primary); font-size:1.05rem;"><?php echo $total_listing_count; ?></strong> item<?php echo $total_listing_count>1?'s':''; ?><?php echo count($category_combos)>0 ? ' <span style="color:rgba(255,255,255,0.35);">('.count($products).' products · '.count($category_combos).' combos)</span>' : ''; ?></p>
                 </div>
+
+                <?php if (!empty($category_combos)): ?>
+                <div style="margin-bottom:28px;">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                        <span style="display:inline-block; font-size:0.65rem; font-weight:800; letter-spacing:2px; color:var(--gold-primary); text-transform:uppercase; background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.18); padding:5px 14px; border-radius:20px;">Combo Offer</span>
+                        <span style="font-size:0.85rem; color:rgba(255,255,255,0.45);">Save more when you stack</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:24px;">
+                        <?php foreach ($category_combos as $combo): ?>
+                        <div class="product-card tilt-card spotlight-card combo-offer-card" style="background:linear-gradient(160deg,rgba(212,175,55,0.07) 0%,rgba(255,255,255,0.03) 100%); border:1px solid rgba(212,175,55,0.22); border-radius:20px; overflow:hidden; position:relative;">
+                            <?php if (!empty($combo['discount_percent']) && $combo['discount_percent'] > 0): ?>
+                                <span class="badge-discount" style="position:absolute; top:14px; left:14px; z-index:3;">-<?php echo (int)$combo['discount_percent']; ?>% OFF</span>
+                            <?php elseif (!empty($combo['savings']) && $combo['savings'] > 0): ?>
+                                <span class="badge-discount" style="position:absolute; top:14px; left:14px; z-index:3;">SAVE ₹<?php echo number_format($combo['savings'], 0); ?></span>
+                            <?php endif; ?>
+                            <span style="position:absolute; top:14px; right:14px; z-index:3; font-size:0.6rem; font-weight:800; letter-spacing:1.5px; background:var(--gold-gradient); color:#080C10; padding:4px 10px; border-radius:20px; text-transform:uppercase;">Combo</span>
+                            <div class="tilt-shine"></div>
+                            <div style="height:200px; background:radial-gradient(circle at center,rgba(212,175,55,0.1) 0%,rgba(8,12,16,0.95) 80%); padding:16px; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <?php $combo_imgs = array_slice(array_filter(array_column($combo['items'] ?? [], 'image_url')), 0, 2); ?>
+                                <?php if (!empty($combo['banner_image'])): ?>
+                                    <img src="<?php echo htmlspecialchars($combo['banner_image']); ?>" alt="<?php echo htmlspecialchars($combo['title']); ?>" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
+                                <?php elseif (!empty($combo_imgs)): ?>
+                                    <?php foreach ($combo_imgs as $ci => $cimg): ?>
+                                        <?php if ($ci > 0): ?><span style="color:var(--gold-primary); font-weight:800; font-size:1.4rem;">+</span><?php endif; ?>
+                                        <img src="<?php echo htmlspecialchars($cimg); ?>" alt="" style="height:140px; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                            <div style="padding:20px;">
+                                <h3 style="font-size:0.95rem; color:#fff; margin-bottom:8px; font-family:var(--font-heading); font-weight:700; line-height:1.3;"><?php echo htmlspecialchars($combo['title']); ?></h3>
+                                <?php if (!empty($combo['items'])): ?>
+                                <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px;">
+                                    <?php foreach ($combo['items'] as $cit): ?>
+                                        <span style="font-size:0.65rem; color:rgba(255,255,255,0.55); background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); padding:3px 8px; border-radius:6px;"><?php echo htmlspecialchars(mb_strimwidth($cit['name'], 0, 28, '…')); ?></span>
+                                    <?php endforeach; ?>
+                                </div>
+                                <?php endif; ?>
+                                <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:14px;">
+                                    <span style="font-size:1.25rem; font-weight:800; color:var(--gold-primary); font-family:var(--font-heading);">₹<?php echo number_format((float)$combo['combo_price'],2); ?></span>
+                                    <?php if ($combo['individual_total'] > 0 && $combo['individual_total'] > (float)$combo['combo_price']): ?>
+                                        <span style="font-size:0.82rem; color:rgba(255,255,255,0.35); text-decoration:line-through;">MRP ₹<?php echo number_format($combo['individual_total'],2); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                                <button class="btn-gold combo-add-btn" style="width:100%; padding:11px; font-size:0.8rem; border-radius:12px; font-weight:700;"
+                                    data-bundle-id="<?php echo (int)$combo['id']; ?>"
+                                    data-csrf="<?php echo generate_csrf_token(); ?>">
+                                    <i class="fas fa-layer-group"></i> Add Combo to Cart
+                                </button>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php if (!empty($products)): ?>
                 <div class="product-grid">
                     <?php foreach ($products as $prod):
                         $dp = $prod['max_mrp']>0 ? round((($prod['max_mrp']-$prod['min_price'])/$prod['max_mrp'])*100) : 0;
@@ -284,6 +351,7 @@ if ($category) {
                         </div>
                     <?php endforeach; ?>
                 </div>
+                <?php endif; ?>
             <?php else: ?>
                 <div class="empty-state">
                     <div class="empty-state-icon"><i class="fas fa-search"></i></div>
