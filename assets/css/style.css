@@ -484,6 +484,25 @@
     font-size: 0.9rem;
     opacity: 0.7;
 }
+.mobile-nav-divider {
+    padding: 8px 16px 4px;
+    list-style: none;
+}
+.mobile-nav-divider span {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold-primary, #d4af37);
+}
+.mobile-nav-shop-all a {
+    background: rgba(212,175,55,0.15);
+    color: var(--gold-primary, #d4af37) !important;
+    font-weight: 600;
+}
+.mobile-nav-shop-all a:hover {
+    background: rgba(212,175,55,0.25);
+}
 .mobile-nav-footer {
     padding: 16px 20px;
     border-top: 1px solid rgba(255,255,255,0.06);

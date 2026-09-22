@@ -14,18 +14,18 @@ if ($cat_slug !== 'all') {
     if (!$category && !$is_coming_soon) { $cat_slug = 'all'; }
 }
 
-$active_filter = $is_coming_soon ? 0 : 1;
-$sql = "SELECT DISTINCT p.*, dv.price as max_mrp, dv.sale_price as min_price, dv.id as default_variant_id, (SELECT SUM(pv.stock_qty) FROM product_variants pv WHERE pv.product_id = p.id) as total_stock FROM products p JOIN product_variants dv ON p.id = dv.product_id AND dv.is_default = 1 LEFT JOIN product_categories pc ON p.id = pc.product_id WHERE p.is_active = ?";
+$active_filter = 1;
+$sql = "SELECT DISTINCT p.*, COALESCE(dv.price, 0) as max_mrp, COALESCE(dv.sale_price, 0) as min_price, dv.id as default_variant_id, COALESCE((SELECT SUM(pv.stock_qty) FROM product_variants pv WHERE pv.product_id = p.id), 0) as total_stock FROM products p LEFT JOIN product_variants dv ON p.id = dv.product_id AND dv.is_default = 1 LEFT JOIN product_categories pc ON p.id = pc.product_id WHERE p.is_active = ?";
 $params = [$active_filter];
-if ($category) { $sql .= " AND pc.category_id = ? "; $params[] = $category['id']; }
+if ($category) { $sql .= " AND (pc.category_id = ? OR p.category_id = ?) "; $params[] = $category['id']; $params[] = $category['id']; }
 $sql .= " HAVING min_price >= ? AND min_price <= ? ";
 $params[] = $min_price; $params[] = $max_price;
 if ($in_stock) { $sql .= " AND total_stock > 0 "; }
 switch ($sort) {
-    case 'price-low': $sql .= " ORDER BY min_price ASC "; break;
-    case 'price-high': $sql .= " ORDER BY min_price DESC "; break;
-    case 'popularity': $sql .= " ORDER BY (SELECT COUNT(r.id) FROM reviews r WHERE r.product_id = p.id AND r.is_approved = 1) DESC "; break;
-    default: $sql .= " ORDER BY p.created_at DESC "; break;
+    case 'price-low': $sql .= " ORDER BY total_stock DESC, min_price ASC "; break;
+    case 'price-high': $sql .= " ORDER BY total_stock DESC, min_price DESC "; break;
+    case 'popularity': $sql .= " ORDER BY total_stock DESC, (SELECT COUNT(r.id) FROM reviews r WHERE r.product_id = p.id AND r.is_approved = 1) DESC "; break;
+    default: $sql .= " ORDER BY total_stock DESC, p.created_at DESC "; break;
 }
 try { $stmt = $pdo->prepare($sql); $stmt->execute($params); $products = $stmt->fetchAll(); } catch (PDOException $e) { $products = []; }
 
@@ -51,7 +51,7 @@ if ($cat_slug === 'liver-detox') {
 // Fetch hero image from DB (first active product in category)
 if ($category) {
     try {
-        $stmt_hero = $pdo->prepare("SELECT p.image_url FROM products p JOIN product_categories pc ON p.id = pc.product_id WHERE pc.category_id = ? AND p.is_active = 1 LIMIT 1");
+        $stmt_hero = $pdo->prepare("SELECT p.image_url FROM products p WHERE p.category_id = ? AND p.is_active = 1 LIMIT 1");
         $stmt_hero->execute([$category['id']]);
         $hero_row = $stmt_hero->fetch();
         if ($hero_row && !empty($hero_row['image_url'])) {

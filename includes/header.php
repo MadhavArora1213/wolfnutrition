@@ -10,6 +10,9 @@ $announcements = get_announcements();
 $cart_count = get_cart_count();
 $active_page = basename($_SERVER['PHP_SELF']);
 
+// Fetch all active categories for navigation
+$nav_categories = $pdo->query("SELECT * FROM categories WHERE is_active = 1 ORDER BY display_order ASC")->fetchAll(PDO::FETCH_ASSOC);
+
 // Dynamic SEO & Metatag Engine
 $seo_title = "Wolf Nutrition | Premium Ayurvedic Performance & Vitality Stacks";
 $seo_desc = "Wolf Nutrition merges ancient Ayurvedic wisdom with modern sports science. Buy certified Shilajit, Ashwagandha, and Kutki stacks for stamina and liver support.";
@@ -356,16 +359,10 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="mega-menu" id="megaMenu" aria-hidden="true">
             <div class="mega-menu-inner">
 
-                <!-- Left: Main nav links -->
+                <!-- Left: Browse links -->
                 <div class="mega-col mega-col-categories">
                     <p class="mega-featured-label">Browse</p>
                     <ul class="mega-category-list">
-                        <li class="<?php echo ($active_page === 'category.php' && isset($_GET['slug']) && $_GET['slug'] === 'vitality') ? 'mega-active' : ''; ?>">
-                            <a href="category.php?slug=vitality">Supplements</a>
-                        </li>
-                        <li class="<?php echo ($active_page === 'category.php' && isset($_GET['slug']) && $_GET['slug'] === 'liver-detox') ? 'mega-active' : ''; ?>">
-                            <a href="category.php?slug=liver-detox">Liver Support &amp; Detox</a>
-                        </li>
                         <li class="<?php echo $active_page === 'about.php' ? 'mega-active' : ''; ?>">
                             <a href="about.php">About Us</a>
                         </li>
@@ -378,30 +375,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         <li class="<?php echo $active_page === 'certificates.php' ? 'mega-active' : ''; ?>">
                             <a href="certificates.php">Certifications</a>
                         </li>
-                        <li class="mega-shop-all"><a href="category.php?slug=vitality">Shop All</a></li>
+                        <li class="mega-shop-all"><a href="category.php?slug=supplements">Shop All</a></li>
                     </ul>
                 </div>
 
                 <!-- Divider -->
                 <div class="mega-divider"></div>
 
-                <!-- Middle: Product quick links -->
+                <!-- Right: All Categories -->
                 <div class="mega-col mega-col-links">
                     <p class="mega-featured-label">Our Products</p>
                     <ul class="mega-quick-links">
-                        <li><a href="product.php?slug=wolfpack-unleash-the-alpha-within">Wolfpack — Vitality Stack</a></li>
-                        <li><a href="product.php?slug=wolftox-liver-support-detox">Wolftox — Liver Detox</a></li>
-                        <li><a href="category.php?slug=vitality">Best Sellers</a></li>
-                        <li><a href="category.php?slug=liver-detox">Liver Support</a></li>
+                        <?php foreach ($nav_categories as $cat): ?>
+                        <li><a href="category.php?slug=<?php echo htmlspecialchars($cat['slug']); ?>"><?php echo htmlspecialchars($cat['name']); ?></a></li>
+                        <?php endforeach; ?>
                     </ul>
-                </div>
-
-                <!-- Right: Feature banner -->
-                <div class="mega-col mega-col-banner">
-                    <a href="category.php?slug=vitality" class="mega-banner-card">
-                        <img src="assets/images/products/wolfpack_shoot.png" alt="Shop Bestsellers">
-                        <span class="mega-banner-cta">Shop Bestsellers</span>
-                    </a>
                 </div>
 
             </div>
@@ -427,21 +415,25 @@ document.addEventListener('DOMContentLoaded', function() {
             <li class="<?php echo $active_page === 'index.php' ? 'active' : ''; ?>">
                 <a href="index.php"><i class="fas fa-home"></i> Home</a>
             </li>
-            <li class="<?php echo ($active_page === 'category.php' && isset($_GET['slug']) && $_GET['slug'] === 'vitality') ? 'active' : ''; ?>">
-                <a href="category.php?slug=vitality"><i class="fas fa-capsules"></i> Supplements</a>
-            </li>
-            <li class="<?php echo ($active_page === 'category.php' && isset($_GET['slug']) && $_GET['slug'] === 'liver-detox') ? 'active' : ''; ?>">
-                <a href="category.php?slug=liver-detox"><i class="fas fa-shield-halved"></i> Liver Support & Detox</a>
-            </li>
+            <li class="mobile-nav-divider"><span>Browse</span></li>
             <li class="<?php echo $active_page === 'about.php' ? 'active' : ''; ?>">
                 <a href="about.php"><i class="fas fa-info-circle"></i> About Us</a>
             </li>
             <li class="<?php echo $active_page === 'contact.php' ? 'active' : ''; ?>">
                 <a href="contact.php"><i class="fas fa-envelope"></i> Contact</a>
             </li>
+            <li class="<?php echo $active_page === 'blog.php' ? 'active' : ''; ?>">
+                <a href="blog.php"><i class="fas fa-book-open"></i> Wellness Blog</a>
+            </li>
+            <li class="<?php echo $active_page === 'certificates.php' ? 'active' : ''; ?>">
+                <a href="certificates.php"><i class="fas fa-certificate"></i> Certifications</a>
+            </li>
+            <li class="mobile-nav-shop-all">
+                <a href="category.php?slug=supplements"><i class="fas fa-shopping-bag"></i> Shop All</a>
+            </li>
         </ul>
         <div class="mobile-nav-footer">
-            <a href="index.php" class="btn-gold" style="width:100%; justify-content:center; padding:12px; text-decoration:none;">
+            <a href="category.php?slug=supplements" class="btn-gold" style="width:100%; justify-content:center; padding:12px; text-decoration:none;">
                 <i class="fas fa-shopping-cart"></i> Shop Now
             </a>
         </div>
@@ -459,7 +451,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="search-tags">
                 <a href="product.php?slug=wolfpack-unleash-the-alpha-within" class="search-tag">Wolfpack Vitality</a>
                 <a href="product.php?slug=wolftox-liver-support-detox" class="search-tag">Wolftox Detox</a>
-                <a href="category.php?slug=vitality" class="search-tag">Shilajit</a>
+                <a href="category.php?slug=supplements" class="search-tag">Shilajit</a>
                 <a href="category.php?slug=liver-detox" class="search-tag">Liver Support</a>
             </div>
         </div>
