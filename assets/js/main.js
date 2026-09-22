@@ -239,13 +239,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Quick Add Button Click
+    // Quick Add Button Click (delegated — works for clicks on inner <i> too)
     document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('quick-add-btn')) {
-            e.preventDefault();
-            const productId = e.target.dataset.productId;
-            const variantId = e.target.dataset.variantId;
-            const csrfToken = e.target.dataset.csrf || '';
+        const quickBtn = e.target.closest('.quick-add-btn');
+        if (!quickBtn) return;
+        e.preventDefault();
+        e.stopPropagation();
+            const productId = quickBtn.dataset.productId;
+            const variantId = quickBtn.dataset.variantId;
+            const csrfToken = quickBtn.dataset.csrf || window.__csrfToken || '';
             
             const formData = new FormData();
             formData.append('action', 'add');
@@ -268,7 +270,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(err => console.error('Error quick add:', err));
-        }
     });
 
     // Add Bundle Combo Pack (by element id)
@@ -280,15 +281,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Generic combo add-to-cart buttons (homepage tabs, category page, combo section)
+    // Generic combo add-to-cart buttons (homepage tabs, category page, combo section, detail page)
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('.combo-add-btn');
         if (!btn) return;
         e.preventDefault();
-        addBundleToCart(btn, btn.dataset.bundleId);
+        e.stopPropagation();
+        // Prefer explicit qty input on combo detail page when present
+        const qtyInput = document.getElementById('bn-qty-input');
+        const qty = qtyInput ? (parseInt(qtyInput.value, 10) || 1) : 1;
+        addBundleToCart(btn, btn.dataset.bundleId, qty);
     });
 
-    function addBundleToCart(btn, bundleId) {
+    function addBundleToCart(btn, bundleId, qty) {
         if (!bundleId || btn.disabled) return;
         const csrfToken = btn.dataset.csrf || window.__csrfToken || '';
         const originalHtml = btn.innerHTML;
@@ -298,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData();
         formData.append('action', 'add_bundle');
         formData.append('bundle_id', bundleId);
-        formData.append('quantity', 1);
+        formData.append('quantity', qty || 1);
         formData.append('csrf_token', csrfToken);
 
         fetch('cart_api.php', {
@@ -325,6 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error adding bundle:', err);
             btn.disabled = false;
             btn.innerHTML = originalHtml;
+            alert('Could not add combo to cart. Please try again.');
         });
     }
 

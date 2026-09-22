@@ -429,7 +429,7 @@ try {
                             <?php endif; ?>
                             <span style="position:absolute; top:14px; right:14px; z-index:3; font-size:0.6rem; font-weight:800; letter-spacing:1.5px; background:var(--gold-gradient); color:#080C10; padding:4px 10px; border-radius:20px; text-transform:uppercase;">Combo</span>
                             <div class="tilt-shine"></div>
-                            <div style="height:200px; background:radial-gradient(circle at center,rgba(212,175,55,0.1) 0%,rgba(8,12,16,0.95) 80%); padding:16px; display:flex; align-items:center; justify-content:center; gap:8px; position:relative;">
+                            <a href="combo/<?php echo htmlspecialchars($combo['slug']); ?>" style="display:block;height:200px; background:radial-gradient(circle at center,rgba(212,175,55,0.1) 0%,rgba(8,12,16,0.95) 80%); padding:16px; display:flex; align-items:center; justify-content:center; gap:8px; position:relative;">
                                 <?php $combo_imgs = array_slice(array_filter(array_column($combo['items'] ?? [], 'image_url')), 0, 2); ?>
                                 <?php if (!empty($combo['banner_image'])): ?>
                                     <img src="<?php echo htmlspecialchars($combo['banner_image']); ?>" alt="<?php echo htmlspecialchars($combo['title']); ?>" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
@@ -439,9 +439,11 @@ try {
                                         <img src="<?php echo htmlspecialchars($cimg); ?>" alt="" style="height:140px; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
                                     <?php endforeach; ?>
                                 <?php endif; ?>
-                            </div>
+                            </a>
                             <div style="padding:20px;">
-                                <h3 style="font-size:0.95rem; color:#fff; margin-bottom:8px; font-family:var(--font-heading); font-weight:700; line-height:1.3;"><?php echo htmlspecialchars($combo['title']); ?></h3>
+                                <a href="combo/<?php echo htmlspecialchars($combo['slug']); ?>" style="text-decoration:none;">
+                                    <h3 style="font-size:0.95rem; color:#fff; margin-bottom:8px; font-family:var(--font-heading); font-weight:700; line-height:1.3;"><?php echo htmlspecialchars($combo['title']); ?></h3>
+                                </a>
                                 <?php if (!empty($combo['items'])): ?>
                                 <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px;">
                                     <?php foreach ($combo['items'] as $ci2 => $cit): ?>
@@ -852,20 +854,22 @@ if (!$featured && !empty($testimonials)) {
                 <?php elseif (!empty($fb['savings']) && $fb['savings'] > 0): ?>
                     <span style="position:absolute; top:14px; left:14px; z-index:3; font-size:0.65rem; font-weight:800; background:var(--gold-primary); color:#080C10; padding:4px 12px; border-radius:20px;">SAVE ₹<?php echo number_format($fb['savings'], 0); ?></span>
                 <?php endif; ?>
-                <div class="tilt-shine"></div>
-                <div style="height:200px; background:radial-gradient(circle at center,rgba(212,175,55,0.12) 0%,rgba(8,12,16,0.9) 80%); padding:20px; display:flex; align-items:center; justify-content:center; gap:10px;">
-                    <?php $fb_imgs = array_slice(array_filter(array_column($fb['items'] ?? [], 'image_url')), 0, 3); ?>
-                    <?php if (!empty($fb['banner_image'])): ?>
-                        <img src="<?php echo htmlspecialchars($fb['banner_image']); ?>" alt="<?php echo htmlspecialchars($fb['title']); ?>" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
-                    <?php elseif (!empty($fb_imgs)): ?>
-                        <?php foreach ($fb_imgs as $fi => $fimg): ?>
-                            <?php if ($fi > 0): ?><span style="color:var(--gold-primary); font-weight:800; font-size:1.5rem;">+</span><?php endif; ?>
-                            <img src="<?php echo htmlspecialchars($fimg); ?>" alt="" style="height:150px; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
-                <div style="padding:24px; display:flex; flex-direction:column; flex:1;">
-                    <h3 style="color:#fff; font-size:1.1rem; font-weight:800; text-transform:uppercase; font-family:var(--font-heading); margin-bottom:10px; line-height:1.3;"><?php echo htmlspecialchars($fb['title']); ?></h3>
+                            <div class="tilt-shine"></div>
+                            <a href="combo/<?php echo htmlspecialchars($fb['slug']); ?>" style="display:block;height:200px; background:radial-gradient(circle at center,rgba(212,175,55,0.12) 0%,rgba(8,12,16,0.9) 80%); padding:20px; display:flex; align-items:center; justify-content:center; gap:10px;">
+                                <?php $fb_imgs = array_slice(array_filter(array_column($fb['items'] ?? [], 'image_url')), 0, 3); ?>
+                                <?php if (!empty($fb['banner_image'])): ?>
+                                    <img src="<?php echo htmlspecialchars($fb['banner_image']); ?>" alt="<?php echo htmlspecialchars($fb['title']); ?>" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
+                                <?php elseif (!empty($fb_imgs)): ?>
+                                    <?php foreach ($fb_imgs as $fi => $fimg): ?>
+                                        <?php if ($fi > 0): ?><span style="color:var(--gold-primary); font-weight:800; font-size:1.5rem;">+</span><?php endif; ?>
+                                        <img src="<?php echo htmlspecialchars($fimg); ?>" alt="" style="height:150px; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </a>
+                            <div style="padding:24px; display:flex; flex-direction:column; flex:1;">
+                                <a href="combo/<?php echo htmlspecialchars($fb['slug']); ?>" style="text-decoration:none;">
+                                    <h3 style="color:#fff; font-size:1.1rem; font-weight:800; text-transform:uppercase; font-family:var(--font-heading); margin-bottom:10px; line-height:1.3;"><?php echo htmlspecialchars($fb['title']); ?></h3>
+                                </a>
                     <?php if (!empty($fb['items'])): ?>
                     <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px;">
                         <?php foreach ($fb['items'] as $fit): ?>
