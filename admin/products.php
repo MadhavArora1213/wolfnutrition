@@ -290,11 +290,11 @@ $products = $stmt->fetchAll();
                                     <div class="variant-fields" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:12px;">
                                         <div>
                                             <label style="font-size:0.7rem; color:rgba(255,255,255,0.45); display:block; margin-bottom:4px; font-weight:600;">MRP (&#8377;)</label>
-                                            <input type="number" step="0.01" name="price" class="form-control" style="font-size:0.82rem; padding:7px 10px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:6px; color:#fff;" value="<?php echo $v['price']; ?>" required>
+                                            <input type="number" step="0.01" name="price" class="form-control" style="font-size:0.82rem; padding:7px 10px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:6px; color:#fff;" value="<?php echo $v['price'] == floor($v['price']) ? (int)$v['price'] : $v['price']; ?>" required>
                                         </div>
                                         <div>
                                             <label style="font-size:0.7rem; color:rgba(255,255,255,0.45); display:block; margin-bottom:4px; font-weight:600;">Sale Price (&#8377;)</label>
-                                            <input type="number" step="0.01" name="sale_price" class="form-control" style="font-size:0.82rem; padding:7px 10px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:6px; color:#fff;" value="<?php echo $v['sale_price']; ?>" required>
+                                            <input type="number" step="0.01" name="sale_price" class="form-control" style="font-size:0.82rem; padding:7px 10px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:6px; color:#fff;" value="<?php echo $v['sale_price'] == floor($v['sale_price']) ? (int)$v['sale_price'] : $v['sale_price']; ?>" required>
                                         </div>
                                         <div>
                                             <label style="font-size:0.7rem; color:rgba(255,255,255,0.45); display:block; margin-bottom:4px; font-weight:600;">Stock Qty</label>

@@ -1,5 +1,9 @@
 <?php
 // includes/header.php
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
+
 require_once __DIR__ . '/functions.php';
 
 $announcements = get_announcements();
@@ -59,6 +63,7 @@ if ($active_page === 'product.php' && isset($_GET['slug'])) {
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="assets/images/logo.png">
     
     <!-- SEO Meta Tags -->
     <title><?php echo $seo_title; ?></title>
