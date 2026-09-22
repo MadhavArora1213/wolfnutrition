@@ -5,6 +5,11 @@ require_once __DIR__ . '/includes/sidebar.php';
 
 $action_error = '';
 
+// Fetch categories for optional dropdown
+$stmt_cats = $pdo->prepare("SELECT id, name FROM categories ORDER BY name ASC");
+$stmt_cats->execute();
+$categories = $stmt_cats->fetchAll();
+
 // Handle CREATE bundle
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_bundle'])) {
     $title = trim($_POST['title']);
@@ -14,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_bundle'])) {
     $discount_percent = (float)$_POST['discount_percent'];
     $display_order = (int)$_POST['display_order'];
     $status = isset($_POST['status']) ? 1 : 0;
+    $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
 
     // Handle banner image upload
     $banner_image = '';
@@ -43,10 +49,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_bundle'])) {
             $action_error = "A combo with this slug already exists.";
         } else {
             $stmt_i = $pdo->prepare("
-                INSERT INTO bundles (title, slug, description, banner_image, combo_price, discount_percent, display_order, status) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO bundles (title, slug, description, banner_image, combo_price, discount_percent, display_order, status, category_id) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
-            $stmt_i->execute([$title, $slug, $description, $banner_image, $combo_price, $discount_percent, $display_order, $status]);
+            $stmt_i->execute([$title, $slug, $description, $banner_image, $combo_price, $discount_percent, $display_order, $status, $category_id]);
             $new_id = $pdo->lastInsertId();
             header("Location: bundle_edit.php?id=" . $new_id);
             exit();
@@ -104,6 +110,17 @@ $total_bundles = (int)$stmt_total->fetchColumn();
             <div class="form-group" style="margin-bottom:20px;">
                 <label for="b-desc">Description</label>
                 <textarea name="description" id="b-desc" class="form-control" rows="4"></textarea>
+            </div>
+
+            <div class="form-group" style="margin-bottom:20px; max-width:400px;">
+                <label for="b-category">Category (optional)</label>
+                <select name="category_id" id="b-category" class="form-control">
+                    <option value="">— No category —</option>
+                    <?php foreach ($categories as $cat): ?>
+                        <option value="<?php echo $cat['id']; ?>"><?php echo htmlspecialchars($cat['name']); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <small style="color:var(--text-muted); font-size:0.75rem; margin-top:4px; display:block;">Assign a category so this combo appears in Best Seller reports</small>
             </div>
 
             <!-- Pricing -->

@@ -20,6 +20,11 @@ if (!$bundle) {
     exit();
 }
 
+// Fetch categories for optional dropdown
+$stmt_cats = $pdo->prepare("SELECT id, name FROM categories ORDER BY name ASC");
+$stmt_cats->execute();
+$categories = $stmt_cats->fetchAll();
+
 // Fetch all products for item selection
 $stmt_products = $pdo->prepare("SELECT id, name FROM products ORDER BY name ASC");
 $stmt_products->execute();
@@ -53,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_bundle'])) {
     $discount_percent = (float)$_POST['discount_percent'];
     $display_order = (int)$_POST['display_order'];
     $status = isset($_POST['status']) ? 1 : 0;
+    $category_id = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
 
     // Keep existing banner by default
     $banner_image = $bundle['banner_image'];
@@ -73,9 +79,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_bundle'])) {
     }
 
     $stmt_u = $pdo->prepare("
-        UPDATE bundles SET title = ?, description = ?, banner_image = ?, combo_price = ?, discount_percent = ?, display_order = ?, status = ? WHERE id = ?
+        UPDATE bundles SET title = ?, description = ?, banner_image = ?, combo_price = ?, discount_percent = ?, display_order = ?, status = ?, category_id = ? WHERE id = ?
     ");
-    $stmt_u->execute([$title, $description, $banner_image, $combo_price, $discount_percent, $display_order, $status, $edit_id]);
+    $stmt_u->execute([$title, $description, $banner_image, $combo_price, $discount_percent, $display_order, $status, $category_id, $edit_id]);
     
     // Refresh
     $stmt_b2 = $pdo->prepare("SELECT * FROM bundles WHERE id = ?");
@@ -212,6 +218,19 @@ $items = $stmt_items2->fetchAll();
                     <div class="form-group">
                         <label for="b-desc">Description</label>
                         <textarea name="description" id="b-desc" class="form-control" rows="3"><?php echo htmlspecialchars($bundle['description']); ?></textarea>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:20px;">
+                        <label for="b-category">Category (optional)</label>
+                        <select name="category_id" id="b-category" class="form-control">
+                            <option value="">— No category —</option>
+                            <?php foreach ($categories as $cat): ?>
+                                <option value="<?php echo $cat['id']; ?>" <?php echo (isset($bundle['category_id']) && $bundle['category_id'] == $cat['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($cat['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small style="color:var(--text-muted); font-size:0.75rem; margin-top:4px; display:block;">Assign a category so this combo appears in Best Seller reports</small>
                     </div>
 
                     <div class="bundle-edit-form-fields" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">

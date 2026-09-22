@@ -87,6 +87,31 @@ $stmt->execute();
 $b_performance = $stmt->fetch();
 $bundle_sales_count = (int)$b_performance['bundle_sales'];
 $bundle_revenue_sum = (float)$b_performance['bundle_rev'];
+
+// 6. Sales by Category (Best Seller report)
+// Combos: order_items.bundle_id -> bundles.category_id
+// Regular products: order_items.product_id -> product_categories (fallback products.category_id)
+$cat_sql = "
+    SELECT 
+        c.id,
+        c.name,
+        COALESCE(SUM(oi.quantity), 0) AS total_qty,
+        COALESCE(SUM(oi.price * oi.quantity), 0) AS total_revenue
+    FROM order_items oi
+    JOIN orders o ON oi.order_id = o.id
+    LEFT JOIN bundles b ON oi.bundle_id = b.id AND b.category_id IS NOT NULL
+    LEFT JOIN product_categories pc ON oi.product_id = pc.product_id AND oi.bundle_id IS NULL
+    LEFT JOIN products p ON oi.product_id = p.id AND oi.bundle_id IS NULL AND pc.product_id IS NULL
+    LEFT JOIN categories c ON c.id = COALESCE(b.category_id, pc.category_id, p.category_id)
+    WHERE o.payment_status = 'paid' AND c.id IS NOT NULL
+    GROUP BY c.id, c.name
+    ORDER BY total_qty DESC, total_revenue DESC
+";
+$stmt_cat = $pdo->prepare($cat_sql);
+$stmt_cat->execute();
+$cat_sales = $stmt_cat->fetchAll();
+
+$best_category = $cat_sales[0] ?? null;
 ?>
 
     <style>
@@ -147,6 +172,54 @@ $bundle_revenue_sum = (float)$b_performance['bundle_rev'];
         </div>
     </div>
 
+    <!-- Best Seller Category (full width) -->
+    <div class="glass-card" style="padding:0; overflow:hidden; margin-bottom:28px;">
+        <div style="padding:22px 28px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:12px;">
+            <div style="width:38px; height:38px; border-radius:10px; background:rgba(212,175,55,0.08); display:flex; align-items:center; justify-content:center;">
+                <i class="fas fa-trophy" style="color:#D4AF37; font-size:0.85rem;"></i>
+            </div>
+            <h3 style="font-size:1rem; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.5px; margin:0;">Best Seller Category</h3>
+        </div>
+        <div style="padding:28px;">
+            <?php if ($best_category): ?>
+                <div style="background:rgba(212,175,55,0.06); border:1px solid rgba(212,175,55,0.2); border-radius:12px; padding:24px; text-align:center; margin-bottom:20px;">
+                    <div style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px;">#1 Best Seller</div>
+                    <div style="font-size:1.6rem; font-weight:800; color:#D4AF37; margin-bottom:6px;"><?php echo htmlspecialchars($best_category['name']); ?></div>
+                    <div style="font-size:0.85rem; color:rgba(255,255,255,0.5);">
+                        <?php echo (int)$best_category['total_qty']; ?> units &middot; ₹<?php echo number_format($best_category['total_revenue'], 2); ?>
+                    </div>
+                </div>
+            <?php else: ?>
+                <p style="color:var(--text-muted); font-size:0.9rem; text-align:center; padding:20px;">No category sales data yet. Assign categories to your combos/products to populate this report.</p>
+            <?php endif; ?>
+
+            <?php if (!empty($cat_sales)): ?>
+                <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; margin-top:10px;">All Categories</div>
+                <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                    <thead>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.08); color:rgba(255,255,255,0.45); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px;">
+                            <th style="text-align:left; padding:8px 0;">Category</th>
+                            <th style="text-align:right; padding:8px 0;">Units Sold</th>
+                            <th style="text-align:right; padding:8px 0;">Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($cat_sales as $cs): ?>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                                <td style="padding:10px 0; color:#fff;">
+                                    <i class="fas fa-layer-group" style="color:var(--gold-primary); margin-right:8px; font-size:0.75rem;"></i>
+                                    <?php echo htmlspecialchars($cs['name']); ?>
+                                </td>
+                                <td style="padding:10px 0; text-align:right; color:var(--gold-primary); font-weight:600;"><?php echo (int)$cs['total_qty']; ?></td>
+                                <td style="padding:10px 0; text-align:right; color:#4ade80;">₹<?php echo number_format($cs['total_revenue'], 0); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
+    </div>
+
     <!-- Two Column Grid -->
     <div class="rpt-two-col" style="display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:start;">
 
@@ -180,7 +253,7 @@ $bundle_revenue_sum = (float)$b_performance['bundle_rev'];
             </div>
         </div>
 
-        <!-- CSV Export Info -->
+        <!-- Combo Performance -->
         <div class="glass-card" style="padding:0; overflow:hidden;">
             <div style="padding:22px 28px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:12px;">
                 <div style="width:38px; height:38px; border-radius:10px; background:rgba(212,175,55,0.08); display:flex; align-items:center; justify-content:center;">

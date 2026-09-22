@@ -24,8 +24,8 @@ $stmt_stats = $pdo->prepare("SELECT COUNT(id) as total, SUM(status) as active FR
 $stmt_stats->execute();
 $stats = $stmt_stats->fetch();
 
-// Fetch all bundles
-$stmt = $pdo->prepare("SELECT * FROM bundles ORDER BY display_order ASC");
+// Fetch all bundles with category name
+$stmt = $pdo->prepare("SELECT b.*, c.name AS category_name FROM bundles b LEFT JOIN categories c ON b.category_id = c.id ORDER BY b.display_order ASC");
 $stmt->execute();
 $bundles = $stmt->fetchAll();
 
@@ -183,10 +183,15 @@ foreach ($bundles as $b) {
                         <?php endif; ?>
                         
                         <!-- Overlay badges -->
-                        <div style="position:absolute; top:12px; left:12px; display:flex; gap:6px;">
+                        <div style="position:absolute; top:12px; left:12px; display:flex; gap:6px; flex-wrap:wrap;">
                             <span class="admin-badge <?php echo $b['status'] ? 'badge-completed' : 'badge-failed'; ?>" style="backdrop-filter:blur(4px);">
                                 <?php echo $b['status'] ? '● Active' : '● Inactive'; ?>
                             </span>
+                            <?php if (!empty($b['category_name'])): ?>
+                                <span class="admin-badge badge-pending" style="backdrop-filter:blur(4px); background:rgba(212,175,55,0.85); color:#000;">
+                                    <i class="fas fa-layer-group" style="margin-right:4px;"></i><?php echo htmlspecialchars($b['category_name']); ?>
+                                </span>
+                            <?php endif; ?>
                         </div>
                         
                         <?php if ($savings > 0): ?>
