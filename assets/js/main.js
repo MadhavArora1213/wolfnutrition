@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     data.forEach(item => {
                         const div = document.createElement('a');
-                        div.href = `product.php?slug=${item.slug}`;
+                        div.href = `product/${item.slug}`;
                         div.className = 'search-result-item';
                         div.innerHTML = `
                             <img src="${item.image}" alt="${item.name}">

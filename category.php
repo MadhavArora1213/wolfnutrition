@@ -232,7 +232,7 @@ if ($category) {
                     <input type="number" name="max_price" value="<?php echo $max_price; ?>" class="filter-input" placeholder="Max" style="flex:1;">
                 </div>
                 <button type="submit" class="btn-gold" style="width:100%; margin-top:18px; padding:12px; font-size:0.85rem; border-radius:12px;"><i class="fas fa-check"></i> Apply Filters</button>
-                <a href="category.php?slug=<?php echo htmlspecialchars($cat_slug); ?>" style="display:block; text-align:center; margin-top:12px; font-size:0.82rem; color:rgba(255,255,255,0.4); text-decoration:none; transition:color 0.2s;">Reset All</a>
+                <a href="category/<?php echo htmlspecialchars($cat_slug); ?>" style="display:block; text-align:center; margin-top:12px; font-size:0.82rem; color:rgba(255,255,255,0.4); text-decoration:none; transition:color 0.2s;">Reset All</a>
             </form>
         </aside>
 
@@ -256,7 +256,7 @@ if ($category) {
                                 <img src="<?php echo htmlspecialchars($prod['image_url']); ?>" alt="<?php echo htmlspecialchars($prod['name']); ?>" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5)); transition:transform 0.4s ease; mix-blend-mode:multiply;">
                             </div>
                             <div style="padding:20px;">
-                                <a href="product.php?slug=<?php echo $prod['slug']; ?>" style="text-decoration:none;">
+                                <a href="product/<?php echo $prod['slug']; ?>" style="text-decoration:none;">
                                     <h3 style="font-size:1rem; color:#fff; margin-bottom:8px; font-family:var(--font-heading); font-weight:700; line-height:1.3;"><?php echo htmlspecialchars($prod['name']); ?></h3>
                                 </a>
                                 <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
@@ -271,7 +271,7 @@ if ($category) {
                                     <span style="font-size:0.82rem; color:rgba(255,255,255,0.35); text-decoration:line-through;">MRP ₹<?php echo number_format($prod['max_mrp'],2); ?></span>
                                 </div>
                                 <?php if($is_coming_soon): ?>
-                                    <a href="product.php?slug=<?php echo $prod['slug']; ?>" class="btn-gold" style="width:100%; padding:11px; font-size:0.82rem; border-radius:12px; font-weight:700; text-align:center; text-decoration:none;"><i class="fas fa-eye"></i> View Details</a>
+                                    <a href="product/<?php echo $prod['slug']; ?>" class="btn-gold" style="width:100%; padding:11px; font-size:0.82rem; border-radius:12px; font-weight:700; text-align:center; text-decoration:none;"><i class="fas fa-eye"></i> View Details</a>
                                 <?php elseif($prod['total_stock']>0): ?>
                                     <div style="display:flex; gap:8px;">
                                         <button class="btn-gold quick-add-btn" style="flex:1; padding:11px; font-size:0.82rem; border-radius:12px; font-weight:700;" data-product-id="<?php echo $prod['id']; ?>" data-variant-id="<?php echo $prod['default_variant_id']; ?>" data-csrf="<?php echo generate_csrf_token(); ?>"><i class="fas fa-shopping-cart"></i> Quick Add</button>
@@ -289,7 +289,7 @@ if ($category) {
                     <div class="empty-state-icon"><i class="fas fa-search"></i></div>
                     <h3 style="color:#fff; margin-bottom:8px;">No products found</h3>
                     <p style="color:rgba(255,255,255,0.5); font-size:0.92rem; margin-bottom:22px;">Try adjusting your filters or reset to see all products.</p>
-                    <a href="category.php?slug=<?php echo htmlspecialchars($cat_slug); ?>" class="btn-gold" style="padding:12px 30px; border-radius:30px; font-size:0.88rem;">Clear All Filters</a>
+                    <a href="category/<?php echo htmlspecialchars($cat_slug); ?>" class="btn-gold" style="padding:12px 30px; border-radius:30px; font-size:0.88rem;">Clear All Filters</a>
                 </div>
             <?php endif; ?>
         </div>

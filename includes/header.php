@@ -375,7 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <li class="<?php echo $active_page === 'certificates.php' ? 'mega-active' : ''; ?>">
                             <a href="certificates.php">Certifications</a>
                         </li>
-                        <li class="mega-shop-all"><a href="category.php?slug=supplements">Shop All</a></li>
+                        <li class="mega-shop-all"><a href="category/supplements">Shop All</a></li>
                     </ul>
                 </div>
 
@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p class="mega-featured-label">Our Products</p>
                     <ul class="mega-quick-links">
                         <?php foreach ($nav_categories as $cat): ?>
-                        <li><a href="category.php?slug=<?php echo htmlspecialchars($cat['slug']); ?>"><?php echo htmlspecialchars($cat['name']); ?></a></li>
+                        <li><a href="category/<?php echo htmlspecialchars($cat['slug']); ?>"><?php echo htmlspecialchars($cat['name']); ?></a></li>
                         <?php endforeach; ?>
                     </ul>
                 </div>
@@ -429,11 +429,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 <a href="certificates.php"><i class="fas fa-certificate"></i> Certifications</a>
             </li>
             <li class="mobile-nav-shop-all">
-                <a href="category.php?slug=supplements"><i class="fas fa-shopping-bag"></i> Shop All</a>
+                <a href="category/supplements"><i class="fas fa-shopping-bag"></i> Shop All</a>
             </li>
         </ul>
         <div class="mobile-nav-footer">
-            <a href="category.php?slug=supplements" class="btn-gold" style="width:100%; justify-content:center; padding:12px; text-decoration:none;">
+            <a href="category/supplements" class="btn-gold" style="width:100%; justify-content:center; padding:12px; text-decoration:none;">
                 <i class="fas fa-shopping-cart"></i> Shop Now
             </a>
         </div>
@@ -449,10 +449,10 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="search-popular-searches">
             <h4>Popular Searches</h4>
             <div class="search-tags">
-                <a href="product.php?slug=wolfpack-unleash-the-alpha-within" class="search-tag">Wolfpack Vitality</a>
-                <a href="product.php?slug=wolftox-liver-support-detox" class="search-tag">Wolftox Detox</a>
-                <a href="category.php?slug=supplements" class="search-tag">Shilajit</a>
-                <a href="category.php?slug=liver-detox" class="search-tag">Liver Support</a>
+                <a href="product/wolfpack-unleash-the-alpha-within" class="search-tag">Wolfpack Vitality</a>
+                <a href="product/wolftox-liver-support-detox" class="search-tag">Wolftox Detox</a>
+                <a href="category/supplements" class="search-tag">Shilajit</a>
+                <a href="category/liver-detox" class="search-tag">Liver Support</a>
             </div>
         </div>
 

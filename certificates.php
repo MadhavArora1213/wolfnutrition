@@ -193,7 +193,7 @@ $certs = get_certificates();
         <h3 style="font-size:clamp(1.6rem,4vw,2.2rem);font-family:var(--font-heading);font-weight:800;text-transform:uppercase;color:#fff;margin-bottom:12px;position:relative;z-index:2;">Transparency is Our Standard</h3>
         <p style="font-size:1rem;color:rgba(255,255,255,0.6);max-width:520px;margin:0 auto 28px;line-height:1.75;position:relative;z-index:2;">Every Wolf Nutrition product is certified, lab-tested, and FSSAI registered. Shop with complete confidence.</p>
         <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative;z-index:2;">
-            <a href="category.php?slug=vitality" class="btn-gold" style="padding:14px 36px;font-size:0.92rem;border-radius:30px;"><i class="fas fa-shopping-bag"></i> Shop Supplements</a>
+            <a href="category/vitality" class="btn-gold" style="padding:14px 36px;font-size:0.92rem;border-radius:30px;"><i class="fas fa-shopping-bag"></i> Shop Supplements</a>
             <a href="about.php" class="btn-outline-gold" style="padding:13px 36px;font-size:0.92rem;border-radius:30px;">Our Story</a>
         </div>
     </div>

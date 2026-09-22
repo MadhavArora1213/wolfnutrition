@@ -31,10 +31,10 @@ foreach ($static_pages as [$page, $priority, $freq]) {
 }
 
 // Categories
-$categories = ['vitality', 'liver-detox', 'all'];
+$categories = ['supplements', 'vitality', 'liver-detox', 'weight-management', 'protein', 'coming-soon'];
 foreach ($categories as $cat) {
     echo '  <url>' . "\n";
-    echo '    <loc>' . htmlspecialchars($base_url . '/category.php?slug=' . $cat) . '</loc>' . "\n";
+    echo '    <loc>' . htmlspecialchars($base_url . '/category/' . $cat) . '</loc>' . "\n";
     echo '    <lastmod>' . date('Y-m-d') . '</lastmod>' . "\n";
     echo '    <changefreq>weekly</changefreq>' . "\n";
     echo '    <priority>0.85</priority>' . "\n";
@@ -48,7 +48,7 @@ try {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $lastmod = !empty($row['updated_at']) ? date('Y-m-d', strtotime($row['updated_at'])) : date('Y-m-d');
         echo '  <url>' . "\n";
-        echo '    <loc>' . htmlspecialchars($base_url . '/product.php?slug=' . $row['slug']) . '</loc>' . "\n";
+        echo '    <loc>' . htmlspecialchars($base_url . '/product/' . $row['slug']) . '</loc>' . "\n";
         echo '    <lastmod>' . $lastmod . '</lastmod>' . "\n";
         echo '    <changefreq>daily</changefreq>' . "\n";
         echo '    <priority>1.00</priority>' . "\n";

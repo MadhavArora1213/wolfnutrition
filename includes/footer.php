@@ -20,8 +20,8 @@ require_once __DIR__ . '/functions.php';
                     <h4>Quick Links</h4>
                     <ul>
                         <li><a href="index.php">Home</a></li>
-                        <li><a href="category.php?slug=vitality">Supplements</a></li>
-                        <li><a href="category.php?slug=liver-detox">Liver Support & Detox</a></li>
+                        <li><a href="category/supplements">Supplements</a></li>
+                        <li><a href="category/liver-detox">Liver Support & Detox</a></li>
                         <li><a href="about.php">Our Brand Story</a></li>
                         <li><a href="contact.php">Contact Us</a></li>
                         <li><a href="certificates.php">Quality Certificates</a></li>

@@ -140,7 +140,7 @@
         <h1>The Wolf <span class="gold">Nutrition</span> Story</h1>
         <p class="about-hero-sub">We don't just sell supplements. We engineer complete Ayurvedic performance systems for men who refuse to settle for average.</p>
         <div class="hero-ctas">
-            <a href="category.php?slug=all" class="btn-gold" style="padding:14px 36px; font-size:0.92rem; border-radius:30px;"><i class="fas fa-shopping-bag"></i> Shop Stacks</a>
+            <a href="category/all" class="btn-gold" style="padding:14px 36px; font-size:0.92rem; border-radius:30px;"><i class="fas fa-shopping-bag"></i> Shop Stacks</a>
             <a href="#story" class="btn-outline-gold" style="padding:13px 36px; font-size:0.92rem; border-radius:30px;">Our Story <i class="fas fa-arrow-down" style="margin-left:6px; font-size:0.8rem;"></i></a>
         </div>
     </div>
@@ -167,7 +167,7 @@
                 <p>"Ayurveda is not a shortcut. It is a daily discipline. In 90 days, your body undergoes complete cellular rejuvenation."</p>
                 <cite>— Wolf Nutrition Philosophy</cite>
             </div>
-            <a href="category.php?slug=all" class="btn-gold" style="padding:13px 30px; border-radius:30px; font-size:0.9rem; margin-top:24px; display:inline-flex; align-items:center; gap:8px;"><i class="fas fa-arrow-right"></i> Explore Our Stacks</a>
+            <a href="category/all" class="btn-gold" style="padding:13px 30px; border-radius:30px; font-size:0.9rem; margin-top:24px; display:inline-flex; align-items:center; gap:8px;"><i class="fas fa-arrow-right"></i> Explore Our Stacks</a>
         </div>
         <div class="story-visual">
             <img src="assets/images/products/about_wolfpack.png" alt="Wolfpack" class="story-img-left">
@@ -273,7 +273,7 @@
         <h3>Take Command of Your Health</h3>
         <p>Explore our clinically validated formulations. From physical endurance stacks to complete toxin cleanses — select the support your body deserves.</p>
         <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; position:relative; z-index:2;">
-            <a href="category.php?slug=all" class="btn-gold" style="padding:14px 36px; font-size:0.92rem; border-radius:30px;"><i class="fas fa-shopping-bag"></i> Shop Our Formulations</a>
+            <a href="category/all" class="btn-gold" style="padding:14px 36px; font-size:0.92rem; border-radius:30px;"><i class="fas fa-shopping-bag"></i> Shop Our Formulations</a>
         </div>
     </div>
 </div>

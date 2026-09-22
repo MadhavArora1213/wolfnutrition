@@ -72,3 +72,12 @@ RewriteEngine On
 <IfModule mod_rewrite.c>
     RewriteRule ^(phpmyadmin|phpMyAdmin|myadmin|pma|dbadmin) - [F,L]
 </IfModule>
+
+# --------------------------------------------------------
+# CLEAN PERMALINKS
+# --------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteRule ^category/([^/]+)/?$ category.php?slug=$1 [L,QSA]
+    RewriteRule ^product/([^/]+)/?$ product.php?slug=$1 [L,QSA]
+    RewriteRule ^blog/([^/]+)/?$ blog-post.php?slug=$1 [L,QSA]
+</IfModule>

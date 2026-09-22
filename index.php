@@ -270,10 +270,10 @@ try {
     </div>
     <!-- Image Slider -->
     <div class="hero-slider" style="position:relative; width:100%;" role="img" aria-label="Wolf Nutrition product showcase slider">
-        <div class="hero-slide active"><a href="product.php?slug=wolftox-liver-support-detox" aria-label="WolfTox Liver Support Detox - Shop Now"><img src="assets/images/hero1.png" alt="WolfTox Liver Support & Detox Ayurvedic Capsules" width="1920" height="800" loading="eager" fetchpriority="high"></a></div>
-        <div class="hero-slide"><a href="product.php?slug=wolfpack-unleash-the-alpha-within" aria-label="Wolfpack Vitality Capsules - Shop Now"><img src="assets/images/hero2.png" alt="Wolfpack Ayurvedic Vitality & Performance Capsules" width="1920" height="800" loading="lazy"></a></div>
-        <div class="hero-slide"><a href="product.php?slug=wolfpack-unleash-the-alpha-within" aria-label="Wolfpack Performance Capsules - Shop Now"><img src="assets/images/hero3.png" alt="Wolfpack Performance Enhancer for Men" width="1920" height="800" loading="lazy"></a></div>
-        <div class="hero-slide"><a href="product.php?slug=wolftox-liver-support-detox" aria-label="WolfTox Liver Detox - Shop Now"><img src="assets/images/hero4.png" alt="WolfTox Liver Detox Ayurvedic Supplement" width="1920" height="800" loading="lazy"></a></div>
+        <div class="hero-slide active"><a href="product/wolftox-liver-support-detox" aria-label="WolfTox Liver Support Detox - Shop Now"><img src="assets/images/hero1.png" alt="WolfTox Liver Support & Detox Ayurvedic Capsules" width="1920" height="800" loading="eager" fetchpriority="high"></a></div>
+        <div class="hero-slide"><a href="product/wolfpack-unleash-the-alpha-within" aria-label="Wolfpack Vitality Capsules - Shop Now"><img src="assets/images/hero2.png" alt="Wolfpack Ayurvedic Vitality & Performance Capsules" width="1920" height="800" loading="lazy"></a></div>
+        <div class="hero-slide"><a href="product/wolfpack-unleash-the-alpha-within" aria-label="Wolfpack Performance Capsules - Shop Now"><img src="assets/images/hero3.png" alt="Wolfpack Performance Enhancer for Men" width="1920" height="800" loading="lazy"></a></div>
+        <div class="hero-slide"><a href="product/wolftox-liver-support-detox" aria-label="WolfTox Liver Detox - Shop Now"><img src="assets/images/hero4.png" alt="WolfTox Liver Detox Ayurvedic Supplement" width="1920" height="800" loading="lazy"></a></div>
     </div>
 </section>
 
@@ -305,7 +305,7 @@ try {
         <div class="goal-cards-row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;">
 
             <!-- Vitality Stack -->
-            <a href="category.php?slug=vitality" class="goal-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;position:relative;">
+            <a href="category/vitality" class="goal-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;position:relative;">
                 <div style="position:absolute;top:0;right:10px;background:var(--gold-gradient);color:#080C10;font-size:0.55rem;font-weight:800;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:1px;z-index:2;">Best Seller</div>
                 <img src="<?php echo BASE_URL . '/' . htmlspecialchars($goal_vitality_img); ?>" alt="Wolfpack Vitality Stack" style="width:70%;object-fit:contain;filter:drop-shadow(0 20px 50px rgba(212,175,55,0.2));transition:transform 0.4s ease;">
                 <div style="width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.35),transparent);margin:18px 0;"></div>
@@ -318,7 +318,7 @@ try {
             </a>
 
             <!-- Liver Detox -->
-            <a href="category.php?slug=liver-detox" class="goal-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;">
+            <a href="category/liver-detox" class="goal-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;">
                 <img src="<?php echo BASE_URL . '/' . htmlspecialchars($goal_liver_img); ?>" alt="Wolftox Liver Detox" style="width:70%;object-fit:contain;filter:drop-shadow(0 20px 50px rgba(212,175,55,0.2));transition:transform 0.4s ease;">
                 <div style="width:80%;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.35),transparent);margin:18px 0;"></div>
                 <div style="text-align:center;">
@@ -330,7 +330,7 @@ try {
             </a>
 
             <!-- Bundle -->
-            <a href="category.php?slug=all" class="goal-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;position:relative;">
+            <a href="category/all" class="goal-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;position:relative;">
                 <div style="position:absolute;top:0;left:10px;background:rgba(212,175,55,0.15);border:1px solid rgba(212,175,55,0.35);color:var(--gold-primary);font-size:0.55rem;font-weight:800;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:1px;z-index:2;">Save 10%</div>
                 <div style="width:80%;display:flex;align-items:flex-end;justify-content:center;">
                     <img src="<?php echo BASE_URL . '/' . htmlspecialchars($goal_vitality_img); ?>" alt="Wolfpack" style="width:48%;object-fit:contain;filter:drop-shadow(0 16px 40px rgba(212,175,55,0.15));transition:transform 0.4s ease;transform:rotate(-5deg) translateX(10px);">
@@ -408,7 +408,7 @@ try {
                                 <img src="<?php echo htmlspecialchars($prod['image_url']); ?>" alt="<?php echo htmlspecialchars($prod['name'] . ' - Ayurvedic Supplement'); ?>" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5)); transition:transform 0.4s ease;">
                             </div>
                             <div class="product-card-info" style="padding:20px;">
-                                <a href="product.php?slug=<?php echo $prod['slug']; ?>" style="text-decoration:none;">
+                                <a href="product/<?php echo $prod['slug']; ?>" style="text-decoration:none;">
                                     <h3 class="product-card-title" style="font-size:1rem; color:#fff; margin-bottom:8px; font-family:var(--font-heading); font-weight:700; line-height:1.3;"><?php echo htmlspecialchars($prod['name']); ?></h3>
                                 </a>
                                 <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
@@ -599,7 +599,7 @@ try {
         <!-- Coming Soon Cards -->
         <div class="coming-soon-grid">
             <?php foreach ($coming_soon as $cs): ?>
-            <a href="product.php?slug=<?php echo htmlspecialchars($cs['slug']); ?>" style="text-decoration:none;">
+            <a href="product/<?php echo htmlspecialchars($cs['slug']); ?>" style="text-decoration:none;">
             <div class="tilt-card" style="position:relative; background:rgba(255,255,255,0.02); border:1px solid rgba(212,175,55,0.15); border-radius:24px; overflow:hidden; transition:all 0.5s; cursor:pointer;">
                 <!-- Gold top accent -->
                 <div style="position:absolute; top:0; left:0; right:0; height:3px; background:var(--gold-gradient); z-index:2;"></div>
@@ -859,7 +859,7 @@ if (!$featured && !empty($testimonials)) {
                     </div>
                     <?php endforeach; ?>
                 </div>
-                <a href="category.php?slug=all" class="btn-gold perf-cta">Explore Products</a>
+                <a href="category/all" class="btn-gold perf-cta">Explore Products</a>
             </div>
         </div>
     </div>

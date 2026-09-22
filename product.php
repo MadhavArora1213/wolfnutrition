@@ -207,7 +207,7 @@ if (empty($gallery)) $gallery = [$product['image_url']];
     <div style="font-size:0.82rem; color:rgba(255,255,255,0.4); margin-bottom:24px;">
         <a href="index.php" style="color:rgba(255,255,255,0.4); text-decoration:none;">Home</a>
         <span style="margin:0 8px;">/</span>
-        <a href="category.php?slug=<?php echo $product['category_slug']; ?>" style="color:rgba(255,255,255,0.4); text-decoration:none;"><?php echo htmlspecialchars($product['category_name']); ?></a>
+        <a href="category/<?php echo $product['category_slug']; ?>" style="color:rgba(255,255,255,0.4); text-decoration:none;"><?php echo htmlspecialchars($product['category_name']); ?></a>
         <span style="margin:0 8px;">/</span>
         <span style="color:var(--gold-primary);"><?php echo htmlspecialchars($product['name']); ?></span>
     </div>
@@ -426,7 +426,7 @@ if (empty($gallery)) $gallery = [$product['image_url']];
         <!-- Write Review -->
         <div class="pd-write-review">
             <h3 style="font-size:1.2rem; margin-bottom:20px; color:#fff;">Write A Review</h3>
-            <form action="product.php?slug=<?php echo htmlspecialchars($slug); ?>" method="POST">
+            <form action="product/<?php echo htmlspecialchars($slug); ?>" method="POST">
                 <label>Your Rating</label>
                 <div class="rating-select-stars" id="review-stars">
                     <i class="fas fa-star active" data-value="1"></i>
@@ -463,7 +463,7 @@ if (empty($gallery)) $gallery = [$product['image_url']];
                         <img src="<?php echo htmlspecialchars($rel['image_url']); ?>" alt="<?php echo htmlspecialchars($rel['name']); ?>" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 10px 20px rgba(8,12,16,0.5));">
                     </div>
                     <div style="padding:18px;">
-                        <a href="product.php?slug=<?php echo $rel['slug']; ?>" style="text-decoration:none;"><h3 style="font-size:0.95rem; color:#fff; margin-bottom:6px; font-family:var(--font-heading); font-weight:700; line-height:1.3;"><?php echo htmlspecialchars($rel['name']); ?></h3></a>
+                        <a href="product/<?php echo $rel['slug']; ?>" style="text-decoration:none;"><h3 style="font-size:0.95rem; color:#fff; margin-bottom:6px; font-family:var(--font-heading); font-weight:700; line-height:1.3;"><?php echo htmlspecialchars($rel['name']); ?></h3></a>
                         <div style="display:flex; align-items:center; gap:5px; margin-bottom:10px;">
                             <?php for($s=1;$s<=5;$s++):?><i class="<?php echo $s<=round($ra)?'fas':'far';?> fa-star" style="color:var(--gold-light); font-size:0.72rem;"></i><?php endfor;?>
                             <span style="font-size:0.72rem; color:rgba(255,255,255,0.35);">(<?php echo $rr['cnt']; ?>)</span>
@@ -472,7 +472,7 @@ if (empty($gallery)) $gallery = [$product['image_url']];
                             <span style="font-size:1.15rem; font-weight:800; color:var(--gold-primary); font-family:var(--font-heading);">₹<?php echo number_format($rel['min_price'],2); ?></span>
                             <span style="font-size:0.78rem; color:rgba(255,255,255,0.3); text-decoration:line-through;">₹<?php echo number_format($rel['max_mrp'],2); ?></span>
                         </div>
-                        <a href="product.php?slug=<?php echo $rel['slug']; ?>" class="btn-gold" style="width:100%; padding:10px; font-size:0.82rem; border-radius:10px; text-align:center;">View Product</a>
+                        <a href="product/<?php echo $rel['slug']; ?>" class="btn-gold" style="width:100%; padding:10px; font-size:0.82rem; border-radius:10px; text-align:center;">View Product</a>
                     </div>
                 </div>
             <?php endforeach; ?>
