@@ -69,7 +69,7 @@ require_once __DIR__ . '/functions.php';
 
     <!-- Main Script JS -->
     <script>window.__csrfToken = '<?php echo generate_csrf_token(); ?>';</script>
-    <script src="<?php echo BASE_URL; ?>/assets/js/main.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/main.js?v=<?php echo (int)@filemtime(dirname(__DIR__) . '/assets/js/main.js'); ?>"></script>
     <script>
     function handleFooterNewsletterSubmit(e) {
         e.preventDefault();

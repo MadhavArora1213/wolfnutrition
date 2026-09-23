@@ -412,15 +412,12 @@ try {
                 <?php
                 $prods = $products_by_category[$cat['slug']] ?? [];
                 $cat_combos = $combos_by_category[$cat['slug']] ?? [];
+                if ($i === 0 && !empty($uncategorized_combos)) {
+                    $cat_combos = array_merge($uncategorized_combos, $cat_combos);
+                }
                 ?>
-                <?php if (!empty($cat_combos)): ?>
-                <div style="margin-bottom:28px;">
-                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-                        <span style="display:inline-block; font-size:0.65rem; font-weight:800; letter-spacing:2px; color:var(--gold-primary); text-transform:uppercase; background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.18); padding:5px 14px; border-radius:20px;">Combo Offer</span>
-                        <span style="font-size:0.85rem; color:rgba(255,255,255,0.45);">Save more when you stack</span>
-                    </div>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:24px;">
-                        <?php foreach ($cat_combos as $combo): ?>
+                <div class="product-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:24px;">
+                    <?php foreach ($cat_combos as $combo): ?>
                         <div class="product-card tilt-card spotlight-card combo-offer-card" style="background:linear-gradient(160deg,rgba(212,175,55,0.07) 0%,rgba(255,255,255,0.03) 100%); border:1px solid rgba(212,175,55,0.22); border-radius:20px; overflow:hidden; position:relative;">
                             <?php if (!empty($combo['discount_percent']) && $combo['discount_percent'] > 0): ?>
                                 <span class="badge-discount" style="position:absolute; top:14px; left:14px; z-index:3;">-<?php echo (int)$combo['discount_percent']; ?>% OFF</span>
@@ -429,20 +426,20 @@ try {
                             <?php endif; ?>
                             <span style="position:absolute; top:14px; right:14px; z-index:3; font-size:0.6rem; font-weight:800; letter-spacing:1.5px; background:var(--gold-gradient); color:#080C10; padding:4px 10px; border-radius:20px; text-transform:uppercase;">Combo</span>
                             <div class="tilt-shine"></div>
-                            <a href="combo/<?php echo htmlspecialchars($combo['slug']); ?>" style="display:block;height:200px; background:radial-gradient(circle at center,rgba(212,175,55,0.1) 0%,rgba(8,12,16,0.95) 80%); padding:16px; display:flex; align-items:center; justify-content:center; gap:8px; position:relative;">
+                            <a href="bundle.php?slug=<?php echo htmlspecialchars($combo['slug']); ?>" style="display:block;height:240px; background:radial-gradient(circle at center,rgba(212,175,55,0.1) 0%,rgba(8,12,16,0.95) 80%); padding:20px; display:flex; align-items:center; justify-content:center; gap:8px; position:relative;">
                                 <?php $combo_imgs = array_slice(array_filter(array_column($combo['items'] ?? [], 'image_url')), 0, 2); ?>
                                 <?php if (!empty($combo['banner_image'])): ?>
                                     <img src="<?php echo htmlspecialchars($combo['banner_image']); ?>" alt="<?php echo htmlspecialchars($combo['title']); ?>" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
                                 <?php elseif (!empty($combo_imgs)): ?>
                                     <?php foreach ($combo_imgs as $ci => $cimg): ?>
                                         <?php if ($ci > 0): ?><span style="color:var(--gold-primary); font-weight:800; font-size:1.4rem;">+</span><?php endif; ?>
-                                        <img src="<?php echo htmlspecialchars($cimg); ?>" alt="" style="height:140px; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
+                                        <img src="<?php echo htmlspecialchars($cimg); ?>" alt="" style="height:160px; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </a>
-                            <div style="padding:20px;">
-                                <a href="combo/<?php echo htmlspecialchars($combo['slug']); ?>" style="text-decoration:none;">
-                                    <h3 style="font-size:0.95rem; color:#fff; margin-bottom:8px; font-family:var(--font-heading); font-weight:700; line-height:1.3;"><?php echo htmlspecialchars($combo['title']); ?></h3>
+                            <div class="product-card-info" style="padding:20px;">
+                                <a href="bundle.php?slug=<?php echo htmlspecialchars($combo['slug']); ?>" style="text-decoration:none;">
+                                    <h3 class="product-card-title" style="font-size:1rem; color:#fff; margin-bottom:8px; font-family:var(--font-heading); font-weight:700; line-height:1.3;"><?php echo htmlspecialchars($combo['title']); ?></h3>
                                 </a>
                                 <?php if (!empty($combo['items'])): ?>
                                 <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px;">
@@ -464,14 +461,8 @@ try {
                                 </button>
                             </div>
                         </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <?php endif; ?>
-
-                <div class="product-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:24px;">
+                    <?php endforeach; ?>
                     <?php
-                    $prods = $products_by_category[$cat['slug']] ?? [];
                     if (!empty($prods)): foreach ($prods as $prod):
                         $dp = $prod['max_mrp']>0 ? round((($prod['max_mrp']-$prod['min_price'])/$prod['max_mrp'])*100) : 0;
                         $sr = $pdo->prepare("SELECT AVG(rating) as avg_rating, COUNT(id) as cnt FROM reviews WHERE product_id=? AND is_approved=1");
@@ -556,7 +547,9 @@ try {
                             </div>
                         </div>
                     <?php endforeach; else: ?>
+                        <?php if (empty($cat_combos)): ?>
                         <p style="text-align:center; grid-column:1/-1; color:rgba(255,255,255,0.4);">No products found.</p>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>
@@ -855,7 +848,7 @@ if (!$featured && !empty($testimonials)) {
                     <span style="position:absolute; top:14px; left:14px; z-index:3; font-size:0.65rem; font-weight:800; background:var(--gold-primary); color:#080C10; padding:4px 12px; border-radius:20px;">SAVE ₹<?php echo number_format($fb['savings'], 0); ?></span>
                 <?php endif; ?>
                             <div class="tilt-shine"></div>
-                            <a href="combo/<?php echo htmlspecialchars($fb['slug']); ?>" style="display:block;height:200px; background:radial-gradient(circle at center,rgba(212,175,55,0.12) 0%,rgba(8,12,16,0.9) 80%); padding:20px; display:flex; align-items:center; justify-content:center; gap:10px;">
+                            <a href="bundle.php?slug=<?php echo htmlspecialchars($fb['slug']); ?>" style="display:block;height:200px; background:radial-gradient(circle at center,rgba(212,175,55,0.12) 0%,rgba(8,12,16,0.9) 80%); padding:20px; display:flex; align-items:center; justify-content:center; gap:10px;">
                                 <?php $fb_imgs = array_slice(array_filter(array_column($fb['items'] ?? [], 'image_url')), 0, 3); ?>
                                 <?php if (!empty($fb['banner_image'])): ?>
                                     <img src="<?php echo htmlspecialchars($fb['banner_image']); ?>" alt="<?php echo htmlspecialchars($fb['title']); ?>" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
@@ -867,7 +860,7 @@ if (!$featured && !empty($testimonials)) {
                                 <?php endif; ?>
                             </a>
                             <div style="padding:24px; display:flex; flex-direction:column; flex:1;">
-                                <a href="combo/<?php echo htmlspecialchars($fb['slug']); ?>" style="text-decoration:none;">
+                                <a href="bundle.php?slug=<?php echo htmlspecialchars($fb['slug']); ?>" style="text-decoration:none;">
                                     <h3 style="color:#fff; font-size:1.1rem; font-weight:800; text-transform:uppercase; font-family:var(--font-heading); margin-bottom:10px; line-height:1.3;"><?php echo htmlspecialchars($fb['title']); ?></h3>
                                 </a>
                     <?php if (!empty($fb['items'])): ?>

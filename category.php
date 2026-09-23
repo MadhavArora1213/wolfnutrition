@@ -270,7 +270,7 @@ if ($category) {
                             <?php endif; ?>
                             <span style="position:absolute; top:14px; right:14px; z-index:3; font-size:0.6rem; font-weight:800; letter-spacing:1.5px; background:var(--gold-gradient); color:#080C10; padding:4px 10px; border-radius:20px; text-transform:uppercase;">Combo</span>
                             <div class="tilt-shine"></div>
-                            <a href="combo/<?php echo htmlspecialchars($combo['slug']); ?>" style="display:block;height:200px; background:radial-gradient(circle at center,rgba(212,175,55,0.1) 0%,rgba(8,12,16,0.95) 80%); padding:16px; display:flex; align-items:center; justify-content:center; gap:8px;">
+                            <a href="bundle.php?slug=<?php echo htmlspecialchars($combo['slug']); ?>" style="display:block;height:200px; background:radial-gradient(circle at center,rgba(212,175,55,0.1) 0%,rgba(8,12,16,0.95) 80%); padding:16px; display:flex; align-items:center; justify-content:center; gap:8px;">
                                 <?php $combo_imgs = array_slice(array_filter(array_column($combo['items'] ?? [], 'image_url')), 0, 2); ?>
                                 <?php if (!empty($combo['banner_image'])): ?>
                                     <img src="<?php echo htmlspecialchars($combo['banner_image']); ?>" alt="<?php echo htmlspecialchars($combo['title']); ?>" style="max-height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 12px 25px rgba(8,12,16,0.5));">
@@ -282,7 +282,7 @@ if ($category) {
                                 <?php endif; ?>
                             </a>
                             <div style="padding:20px;">
-                                <a href="combo/<?php echo htmlspecialchars($combo['slug']); ?>" style="text-decoration:none;">
+                                <a href="bundle.php?slug=<?php echo htmlspecialchars($combo['slug']); ?>" style="text-decoration:none;">
                                     <h3 style="font-size:0.95rem; color:#fff; margin-bottom:8px; font-family:var(--font-heading); font-weight:700; line-height:1.3;"><?php echo htmlspecialchars($combo['title']); ?></h3>
                                 </a>
                                 <?php if (!empty($combo['items'])): ?>

@@ -64,7 +64,7 @@ try {
     $stmt = $pdo->query("SELECT slug FROM bundles WHERE status = 1");
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         echo '  <url>' . "\n";
-        echo '    <loc>' . htmlspecialchars($base_url . '/combo/' . $row['slug']) . '</loc>' . "\n";
+        echo '    <loc>' . htmlspecialchars($base_url . '/bundle.php?slug=' . $row['slug']) . '</loc>' . "\n";
         echo '    <lastmod>' . date('Y-m-d') . '</lastmod>' . "\n";
         echo '    <changefreq>weekly</changefreq>' . "\n";
         echo '    <priority>0.90</priority>' . "\n";
