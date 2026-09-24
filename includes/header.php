@@ -432,6 +432,12 @@ document.addEventListener('DOMContentLoaded', function() {
             <li class="mobile-nav-shop-all">
                 <a href="category/supplements"><i class="fas fa-shopping-bag"></i> Shop All</a>
             </li>
+            <li class="mobile-nav-divider"><span>Our Products</span></li>
+            <?php foreach ($nav_categories as $cat): ?>
+            <li>
+                <a href="category/<?php echo htmlspecialchars($cat['slug']); ?>"><i class="fas fa-tag"></i> <?php echo htmlspecialchars($cat['name']); ?></a>
+            </li>
+            <?php endforeach; ?>
         </ul>
         <div class="mobile-nav-footer">
             <a href="category/supplements" class="btn-gold" style="width:100%; justify-content:center; padding:12px; text-decoration:none;">

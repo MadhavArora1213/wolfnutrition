@@ -1,10 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/header.php';
 $cat_slug = isset($_GET['slug']) ? trim($_GET['slug']) : 'all';
-$sort = isset($_GET['sort']) ? trim($_GET['sort']) : 'newest';
-$in_stock = isset($_GET['in_stock']) ? (int)$_GET['in_stock'] : 0;
-$min_price = isset($_GET['min_price']) ? (float)$_GET['min_price'] : 0;
-$max_price = isset($_GET['max_price']) ? (float)$_GET['max_price'] : 5000;
 
 $category = null;
 $is_coming_soon = ($cat_slug === 'coming-soon');
@@ -18,15 +14,7 @@ $active_filter = 1;
 $sql = "SELECT DISTINCT p.*, COALESCE(dv.price, 0) as max_mrp, COALESCE(dv.sale_price, 0) as min_price, dv.id as default_variant_id, COALESCE((SELECT SUM(pv.stock_qty) FROM product_variants pv WHERE pv.product_id = p.id), 0) as total_stock FROM products p LEFT JOIN product_variants dv ON p.id = dv.product_id AND dv.is_default = 1 LEFT JOIN product_categories pc ON p.id = pc.product_id WHERE p.is_active = ?";
 $params = [$active_filter];
 if ($category) { $sql .= " AND (pc.category_id = ? OR p.category_id = ?) "; $params[] = $category['id']; $params[] = $category['id']; }
-$sql .= " HAVING min_price >= ? AND min_price <= ? ";
-$params[] = $min_price; $params[] = $max_price;
-if ($in_stock) { $sql .= " AND total_stock > 0 "; }
-switch ($sort) {
-    case 'price-low': $sql .= " ORDER BY total_stock DESC, min_price ASC "; break;
-    case 'price-high': $sql .= " ORDER BY total_stock DESC, min_price DESC "; break;
-    case 'popularity': $sql .= " ORDER BY total_stock DESC, (SELECT COUNT(r.id) FROM reviews r WHERE r.product_id = p.id AND r.is_approved = 1) DESC "; break;
-    default: $sql .= " ORDER BY total_stock DESC, p.created_at DESC "; break;
-}
+$sql .= " ORDER BY total_stock DESC, p.created_at DESC ";
 try { $stmt = $pdo->prepare($sql); $stmt->execute($params); $products = $stmt->fetchAll(); } catch (PDOException $e) { $products = []; }
 
 // Active combos for this category (all active combos when viewing "all")
@@ -100,18 +88,6 @@ if ($category) {
 .cat-benefit h5{font-size:0.95rem;color:#fff;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;font-family:var(--font-heading);font-weight:700;}
 .cat-benefit p{font-size:0.82rem;color:rgba(255,255,255,0.6);margin:0;line-height:1.5;}
 
-/* ── Filter Sidebar ── */
-.filter-sidebar{background:rgba(15,16,20,0.7);backdrop-filter:blur(16px);border:1px solid rgba(212,175,55,0.1);border-radius:18px;padding:28px 24px;position:sticky;top:100px;}
-.filter-sidebar h3{font-size:1.1rem;text-transform:uppercase;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06);font-family:var(--font-heading);font-weight:800;color:#fff;}
-.filter-label{display:block;font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:7px;}
-.filter-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;color:#fff;font-size:0.9rem;outline:none;transition:border-color 0.25s;font-family:var(--font-body);}
-.filter-input option{background:#1a1b20;color:#fff;}
-.filter-input:focus{border-color:rgba(212,175,55,0.4);box-shadow:0 0 0 3px rgba(212,175,55,0.08);}
-.filter-input::placeholder{color:var(--text-muted);}
-.filter-check{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.88rem;color:rgba(255,255,255,0.6);margin:18px 0;}
-.filter-check input{accent-color:var(--gold-primary);width:17px;height:17px;}
-.filter-divider{height:1px;background:rgba(255,255,255,0.05);margin:16px 0;}
-
 /* ── Product Cards ── */
 .product-card{position:relative;transition:all 0.4s cubic-bezier(0.25,0.8,0.25,1);background:rgba(255,255,255,0.03);border:1px solid rgba(212,175,55,0.08);border-radius:20px;overflow:hidden;}
 .product-card:hover{transform:translateY(-8px);border-color:var(--gold-primary);box-shadow:0 20px 50px rgba(8,12,16,0.5),0 0 40px rgba(212,175,55,0.08);}
@@ -159,16 +135,11 @@ if ($category) {
     .cat-benefit-icon{width:38px;height:38px;font-size:0.9rem;border-radius:10px;}
     .cat-benefit h5{font-size:0.78rem;}
     .cat-benefit p{font-size:0.68rem;line-height:1.4;}
-    .filter-sidebar{position:static;padding:20px 16px;border-radius:14px;}
-    .filter-sidebar h3{font-size:0.95rem;margin-bottom:14px;}
-    .filter-input{padding:10px 12px;font-size:0.82rem;}
-    .filter-check{font-size:0.8rem;margin:12px 0;}
     .product-grid{grid-template-columns:1fr !important;gap:16px !important;}
     .product-card-image{height:180px !important;}
     .product-card-info{padding:14px !important;}
     .product-card-info h3{font-size:0.88rem !important;}
     .empty-state{padding:40px 20px;}
-    .container > div[style*="grid-template-columns:260px"]{grid-template-columns:1fr !important;gap:16px !important;}
 }
 </style>
 
@@ -215,37 +186,8 @@ if ($category) {
     <!-- ═══ DIVIDER ═══ -->
     <div class="divider-wave"><svg viewBox="0 0 1200 50" preserveAspectRatio="none"><path d="M0,0 L1200,0 L1200,25 Q900,50 600,25 Q300,0 0,25 Z" fill="rgba(212,175,55,0.03)"/></svg></div>
 
-    <!-- ═══ PRODUCT GRID + FILTER ═══ -->
-    <div style="display:grid; grid-template-columns:260px 1fr; gap:28px; align-items:start; margin-top:10px;">
-
-        <!-- Filter Sidebar -->
-        <aside class="filter-sidebar">
-            <h3><i class="fas fa-sliders" style="color:var(--gold-primary); margin-right:8px;"></i> Filters</h3>
-            <form action="category.php" method="GET">
-                <input type="hidden" name="slug" value="<?php echo htmlspecialchars($cat_slug); ?>">
-                <label class="filter-label">Sort By</label>
-                <select name="sort" class="filter-input" onchange="this.form.submit()">
-                    <option value="newest" <?php echo $sort==='newest'?'selected':''; ?>>Newest First</option>
-                    <option value="price-low" <?php echo $sort==='price-low'?'selected':''; ?>>Price: Low to High</option>
-                    <option value="price-high" <?php echo $sort==='price-high'?'selected':''; ?>>Price: High to Low</option>
-                    <option value="popularity" <?php echo $sort==='popularity'?'selected':''; ?>>Popularity</option>
-                </select>
-                <div class="filter-divider"></div>
-                <label class="filter-check">
-                    <input type="checkbox" name="in_stock" value="1" <?php echo $in_stock?'checked':''; ?> onchange="this.form.submit()">
-                    <span>In Stock Only</span>
-                </label>
-                <div class="filter-divider"></div>
-                <label class="filter-label">Price Range (₹)</label>
-                <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-                    <input type="number" name="min_price" value="<?php echo $min_price; ?>" class="filter-input" placeholder="Min" style="flex:1;">
-                    <span style="color:rgba(255,255,255,0.35); font-size:0.8rem;">to</span>
-                    <input type="number" name="max_price" value="<?php echo $max_price; ?>" class="filter-input" placeholder="Max" style="flex:1;">
-                </div>
-                <button type="submit" class="btn-gold" style="width:100%; margin-top:18px; padding:12px; font-size:0.85rem; border-radius:12px;"><i class="fas fa-check"></i> Apply Filters</button>
-                <a href="category/<?php echo htmlspecialchars($cat_slug); ?>" style="display:block; text-align:center; margin-top:12px; font-size:0.82rem; color:rgba(255,255,255,0.4); text-decoration:none; transition:color 0.2s;">Reset All</a>
-            </form>
-        </aside>
+    <!-- ═══ PRODUCT GRID ═══ -->
+    <div style="margin-top:10px;">
 
         <!-- Products -->
         <div>
@@ -358,8 +300,8 @@ if ($category) {
                 <div class="empty-state">
                     <div class="empty-state-icon"><i class="fas fa-search"></i></div>
                     <h3 style="color:#fff; margin-bottom:8px;">No products found</h3>
-                    <p style="color:rgba(255,255,255,0.5); font-size:0.92rem; margin-bottom:22px;">Try adjusting your filters or reset to see all products.</p>
-                    <a href="category/<?php echo htmlspecialchars($cat_slug); ?>" class="btn-gold" style="padding:12px 30px; border-radius:30px; font-size:0.88rem;">Clear All Filters</a>
+                    <p style="color:rgba(255,255,255,0.5); font-size:0.92rem; margin-bottom:22px;">Check back soon — new products are on the way.</p>
+                    <a href="category/all" class="btn-gold" style="padding:12px 30px; border-radius:30px; font-size:0.88rem;">Browse All Products</a>
                 </div>
             <?php endif; ?>
         </div>

@@ -206,6 +206,8 @@ try {
     .combo-card-left,.combo-card-right{text-align:center !important;}
     .combo-card-bottom{flex-direction:column; gap:12px; text-align:center;}
     .product-grid{grid-template-columns:repeat(2,1fr) !important;}
+    .product-tabs-wrap{gap:6px !important;}
+    .product-tabs-wrap .tab-btn{padding:8px 16px !important;font-size:0.72rem !important;}
     .feature-grid{grid-template-columns:1fr !important;}
     .blog-grid{grid-template-columns:1fr !important;}
     .footer-grid{grid-template-columns:1fr !important; gap:30px !important;}
@@ -217,6 +219,16 @@ try {
     .hero-section{overflow:hidden;padding:0 !important;margin:0 !important;}
     .hero-slide:not(.active){display:none !important;}
     .hero-mobile-banner{display:none;}
+    /* Product Tabs */
+    .product-tabs-wrap{gap:6px !important;margin-bottom:28px !important;justify-content:flex-start !important;}
+    .product-tabs-wrap .tab-btn{padding:8px 14px !important;font-size:0.68rem !important;letter-spacing:0.5px !important;}
+    /* Products section */
+    main .container > section, #main-content section{padding-left:0;padding-right:0;}
+    #main-content section[style*="50px 0 60px"]{padding-top:35px !important;padding-bottom:40px !important;}
+    #main-content section[style*="70px 0 80px"]{padding-top:40px !important;padding-bottom:45px !important;}
+    /* Quick features strip */
+    #main-content section .container > div[style*="flex-wrap:wrap"]{gap:8px !important;}
+    #main-content section .container > div[style*="flex-wrap:wrap"] > div{padding:6px 12px !important;font-size:0.7rem !important;}
     /* Statement */
     .statement-section{padding:40px 0 !important;}
     .statement-text{font-size:clamp(1.3rem,6vw,1.8rem) !important;padding:0 15px !important;line-height:1.15 !important;}
@@ -398,7 +410,7 @@ try {
         </div>
 
         <!-- Tabs -->
-        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:40px;">
+        <div class="product-tabs-wrap" style="display:flex; justify-content:center; flex-wrap:wrap; gap:8px; margin-bottom:40px;">
             <?php foreach ($categories as $i => $cat): ?>
                 <button class="tab-btn <?php echo $i===0?'active':''; ?>" data-target="cat-<?php echo $cat['slug']; ?>" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:rgba(255,255,255,0.6); padding:10px 24px; font-family:var(--font-heading); font-weight:700; font-size:0.82rem; text-transform:uppercase; letter-spacing:1px; cursor:pointer; border-radius:30px; transition:all 0.3s;">
                     <?php echo htmlspecialchars($cat['name']); ?>
