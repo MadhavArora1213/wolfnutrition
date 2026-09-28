@@ -67,7 +67,7 @@ if ($est['valid']) {
 
                     <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:5px;">Payment Method</div>
                     <div style="font-weight:700; color:#fff; margin-bottom:15px;">
-                        <?php echo htmlspecialchars($order['payment_method']); ?> 
+                        <?php echo htmlspecialchars($order['payment_method']); ?>
                         <span style="font-size:0.8rem; color:var(--gold-primary); font-weight:600;">(<?php echo strtoupper($order['payment_status']); ?>)</span>
                     </div>
 

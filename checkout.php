@@ -154,6 +154,12 @@ $checkout_error = '';
                         <span id="summary-total-val">₹<?php echo number_format($totals['total'], 2); ?></span>
                     </div>
 
+                    <div style="display:flex; align-items:center; gap:8px; margin-top:14px; padding:10px 12px; background:rgba(46,204,113,0.06); border:1px solid rgba(46,204,113,0.22); border-radius:10px; font-size:0.8rem;">
+                        <i class="fas fa-money-bill-wave" style="color:#2ecc71;"></i>
+                        <span style="color:#2ecc71; font-weight:700;">Need COD?</span>
+                        <span style="color:rgba(255,255,255,0.5);">Order on Amazon for Cash on Delivery. Checkout here is online pay only.</span>
+                    </div>
+
                     <button type="button" name="place_order" class="btn-gold" id="place-order-btn" style="width:100%; margin-top:25px; padding:15px; font-size:1.1rem;">
                         <i class="fas fa-lock" style="margin-right:8px;"></i> PAY NOW SECURELY
                     </button>

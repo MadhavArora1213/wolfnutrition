@@ -169,7 +169,13 @@ $totals = get_cart_totals();
                         <span>Grand Total:</span>
                         <span>₹<?php echo number_format($totals['total'], 2); ?></span>
                     </div>
-                    
+
+                    <div style="display:flex; align-items:center; gap:8px; margin-top:16px; padding:10px 12px; background:rgba(46,204,113,0.06); border:1px solid rgba(46,204,113,0.22); border-radius:10px; font-size:0.82rem;">
+                        <i class="fas fa-money-bill-wave" style="color:#2ecc71;"></i>
+                        <span style="color:#2ecc71; font-weight:700;">Need COD?</span>
+                        <span style="color:rgba(255,255,255,0.5);">Order on Amazon for Cash on Delivery. This site is online pay only.</span>
+                    </div>
+
                     <a href="checkout.php" class="btn-gold" style="width:100%; margin-top:20px; padding:15px;">
                         Proceed to Checkout <i class="fas fa-lock" style="margin-left:5px;"></i>
                     </a>

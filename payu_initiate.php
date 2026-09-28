@@ -23,8 +23,11 @@ if (empty($payu_key) || empty($payu_salt)) {
     die("Payment gateway not configured. Please contact support.");
 }
 
-// Collect form data
+// Collect form data — online payments only (COD via Amazon)
 $payment_method = $_POST['payment_method'] ?? 'UPI';
+if (!in_array($payment_method, ['UPI', 'CARD'], true)) {
+    $payment_method = 'UPI';
+}
 $cust_name    = sanitize_string($_POST['customer_name'] ?? '');
 $cust_email   = sanitize_email($_POST['customer_email'] ?? '');
 $cust_phone   = preg_replace('/[^0-9]/', '', trim($_POST['customer_phone'] ?? ''));
