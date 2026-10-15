@@ -23,7 +23,7 @@ if (empty($payu_key) || empty($payu_salt)) {
     die("Payment gateway not configured. Please contact support.");
 }
 
-// Collect form data — online payments only (COD via Amazon)
+// Collect form data — online payments only (COD via Amazon / Flipkart)
 $payment_method = $_POST['payment_method'] ?? 'UPI';
 if (!in_array($payment_method, ['UPI', 'CARD'], true)) {
     $payment_method = 'UPI';

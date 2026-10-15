@@ -260,10 +260,10 @@ if (empty($gallery)) $gallery = [$product['image_url']];
                 <span style="color:rgba(255,255,255,0.45);"><i class="fas fa-bolt" style="color:var(--gold-primary);"></i> Delivery in 3-5 days</span>
             </div>
 
-            <!-- Pay on Delivery via Amazon -->
+            <!-- Pay on Delivery via Amazon / Flipkart -->
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; font-size:0.88rem; padding:9px 12px; background:rgba(46,204,113,0.06); border:1px solid rgba(46,204,113,0.22); border-radius:10px;">
                 <i class="fas fa-money-bill-wave" style="color:#2ecc71;"></i>
-                <span style="color:#2ecc71; font-weight:700;">Cash on Delivery available on Amazon</span>
+                <span style="color:#2ecc71; font-weight:700;">Cash on Delivery available on Amazon & Flipkart</span>
                 <span style="color:rgba(255,255,255,0.3);">|</span>
                 <span style="color:rgba(255,255,255,0.5);">Order here to pay online via UPI / Cards</span>
             </div>
@@ -338,7 +338,7 @@ if (empty($gallery)) $gallery = [$product['image_url']];
             <div class="pd-benefits">
                 <div class="pd-benefit"><i class="fas fa-leaf"></i> 100% Ayurvedic</div>
                 <div class="pd-benefit"><i class="fas fa-shield-halved"></i> FSSAI Certified</div>
-                <div class="pd-benefit"><i class="fas fa-money-bill-wave"></i> COD on Amazon</div>
+                <div class="pd-benefit"><i class="fas fa-money-bill-wave"></i> COD on Amazon & Flipkart</div>
                 <div class="pd-benefit"><i class="fas fa-rotate-left"></i> Easy Returns</div>
                 <div class="pd-benefit"><i class="fas fa-headset"></i> Support 24/7</div>
             </div>
