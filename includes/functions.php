@@ -425,10 +425,7 @@ function get_bundles_for_category($category_id = false) {
     $bundles = $stmt->fetchAll();
     foreach ($bundles as &$b) {
         $b['items'] = get_bundle_items_detail((int)$b['id']);
-        $b['individual_total'] = 0.0;
-        foreach ($b['items'] as $it) {
-            $b['individual_total'] += (float)$it['price'];
-        }
+        $b['individual_total'] = bundle_individual_total($b['items']);
         $b['savings'] = max(0, $b['individual_total'] - (float)$b['combo_price']);
     }
     unset($b);
@@ -449,6 +446,113 @@ function get_bundle_items_detail($bundle_id) {
     ");
     $stmt->execute([(int)$bundle_id]);
     return $stmt->fetchAll();
+}
+
+// Price a customer pays for one bundle line item bought on its own.
+// Uses the variant's sale price (falls back to MRP when no sale price is set),
+// so the storefront always matches the "Individual total" shown in the admin.
+function bundle_item_price($item) {
+    $sale = (float)($item['sale_price'] ?? 0);
+    return $sale > 0 ? $sale : (float)($item['price'] ?? 0);
+}
+
+// Sum of the individual item prices for a combo.
+function bundle_individual_total($items) {
+    $total = 0.0;
+    foreach ((array)$items as $it) {
+        $total += bundle_item_price($it);
+    }
+    return $total;
+}
+
+// Repair double-encoded characters (mojibake) left in stored copy by an old
+// import, e.g. "₹" saved through a mismatched DB/client charset.
+// Only clearly broken (non-ASCII) fragments are rewritten, so clean text is untouched.
+function fix_text_mojibake($text) {
+    static $broken_variants = null;
+    $text = (string)$text;
+    if ($text === '') return $text;
+
+    if ($broken_variants === null) {
+        $variants = [];
+        $encodings = ['Windows-1252', 'Windows-1254', 'CP850', 'ISO-8859-1', 'Macintosh'];
+        // Keep only encodings this mbstring build actually supports
+        $supported = mb_list_encodings();
+        $encodings = array_values(array_filter($encodings, function ($e) use ($supported) {
+            return in_array($e, $supported, true);
+        }));
+        foreach (['₹', '£'] as $seed) {
+            $frontier = [$seed];
+            for ($depth = 0; $depth < 3; $depth++) {
+                $next = [];
+                foreach ($frontier as $bytes) {
+                    foreach ($encodings as $enc) {
+                        $broken = @mb_convert_encoding($bytes, 'UTF-8', $enc);
+                        if ($broken === '' || $broken === $bytes || !mb_check_encoding($broken, 'UTF-8')) continue;
+                        if (isset($variants[$broken])) continue;
+                        if (!preg_match('/[^\x00-\x7F]/', $broken)) continue;
+                        $variants[$broken] = true;
+                        $next[] = $broken;
+                    }
+                }
+                $frontier = $next;
+            }
+        }
+        $broken_variants = array_keys($variants);
+        // Longest first so multi-byte garbage is restored before short fragments
+        usort($broken_variants, function ($a, $b) { return mb_strlen($b) <=> mb_strlen($a); });
+    }
+
+    foreach ($broken_variants as $broken) {
+        if (strpos($text, $broken) !== false) $text = str_replace($broken, '₹', $text);
+    }
+    // A plain "£" in a price context on this (Indian) store is a mistyped "₹"
+    $fixed = preg_replace('/£(?=\s?[\d,])/u', '₹', $text);
+    return $fixed === null ? $text : $fixed;
+}
+
+// Render admin-authored rich text (Trumbowyg HTML) safely on the storefront.
+// Markup is sanitised instead of escaped, so tags no longer show up as plain text.
+function render_rich_text($html) {
+    $html = fix_text_mojibake((string)$html);
+    if (trim($html) === '') return '';
+
+    // Plain text (no markup at all) → escape it and keep the line breaks
+    if (!preg_match('/<\s*\/?\s*[a-z!][^>]*>/i', $html)) {
+        return nl2br(htmlspecialchars($html, ENT_QUOTES, 'UTF-8'));
+    }
+
+    // Never render active containers (their inner text is dropped with them)
+    $html = preg_replace('#<\s*(script|style|iframe|object|embed|form|input|button|select|textarea)\b[^>]*>.*?<\s*/\s*\1\s*>#is', '', $html);
+    $html = preg_replace('#<\s*(script|style|iframe|object|embed|form|input|button|select|textarea)\b[^>]*/?\s*>#is', '', $html);
+
+    $allowed = '<p><br><b><strong><i><em><u><s><strike><del><ins><mark><small><sub><sup>'
+             . '<span><div><hr><br><ul><ol><li><dl><dt><dd><a><img><h1><h2><h3><h4><h5><h6>'
+             . '<blockquote><pre><code><table><thead><tbody><tfoot><tr><th><td><caption>'
+             . '<figure><figcaption><font><center>';
+    $html = strip_tags($html, $allowed);
+
+    // Drop inline event handlers (onclick, onerror, ...)
+    $html = preg_replace('/\son[a-z]+\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $html);
+
+    // Only safe link/image targets survive
+    $html = preg_replace_callback('/\s(href|src)\s*=\s*("([^"]*)"|\'([^\']*)\')/i', function ($m) {
+        $attr = strtolower($m[1]);
+        $value = trim(($m[3] ?? '') !== '' ? $m[3] : ($m[4] ?? ''));
+        $value = html_entity_decode($value, ENT_QUOTES, 'UTF-8');
+        if ($value === '') return '';
+        $scheme = preg_match('/^([a-z][a-z0-9+.\-]*):/i', $value, $s) ? strtolower($s[1]) : '';
+        if ($scheme !== '' && !in_array($scheme, ['http', 'https', 'mailto', 'tel'], true)) return '';
+        return ' ' . $attr . '="' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '"';
+    }, $html);
+
+    // Strip scripting vectors from inline styles, keep the rest of the styling
+    $html = preg_replace_callback('/\sstyle\s*=\s*("[^"]*"|\'[^\']*\')/i', function ($m) {
+        $value = preg_replace('/(expression|javascript|vbscript|behavior|-moz-binding)\s*:/i', '', $m[1]);
+        return ' style=' . ($value === null ? $m[1] : $value);
+    }, $html);
+
+    return $html;
 }
 
 // Group active bundles by category_id: [category_id => bundles[]], 0 = uncategorized

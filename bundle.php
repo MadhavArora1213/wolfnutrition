@@ -13,8 +13,8 @@ if (!$bundle) { header('Location: index.php'); exit(); }
 $items = get_bundle_items_detail((int)$bundle['id']);
 if (empty($items)) { header('Location: index.php'); exit(); }
 
-$individual_total = 0.0;
-foreach ($items as $it) { $individual_total += (float)$it['price']; }
+// Individual total = what the same items cost bought separately (matches the admin "Individual total")
+$individual_total = bundle_individual_total($items);
 $savings = max(0, $individual_total - (float)$bundle['combo_price']);
 $savings_pct = $individual_total > 0 ? round((1 - ((float)$bundle['combo_price'] / $individual_total)) * 100) : 0;
 $all_in_stock = true;
@@ -30,8 +30,7 @@ if (!empty($bundle['category_id'])) {
 }
 
 $banner = !empty($bundle['banner_image']) ? $bundle['banner_image'] : (!empty($items[0]['image_url']) ? $items[0]['image_url'] : 'assets/images/logo.png');
-$seo_title = htmlspecialchars($bundle['title']) . ' | Combo Offer | Wolf Nutrition';
-$seo_desc = htmlspecialchars(trim(strip_tags($bundle['description'] ?? '')) ?: ('Save ' . $savings_pct . '% on ' . $bundle['title'] . ' — Wolf Nutrition combo pack.'));
+// SEO for this page is resolved in includes/header.php (see the bundle.php branch there)
 ?>
 
 <style>
@@ -108,14 +107,14 @@ $seo_desc = htmlspecialchars(trim(strip_tags($bundle['description'] ?? '')) ?: (
       </div>
 
       <?php if (!empty($bundle['description'])): ?>
-        <div class="bn-desc"><?php echo nl2br(htmlspecialchars($bundle['description'])); ?></div>
+        <div class="bn-desc"><?php echo render_rich_text($bundle['description']); ?></div>
       <?php endif; ?>
 
       <!-- Items -->
       <div class="bn-items">
         <div class="bn-items-h">
           <span>What's inside (<?php echo count($items); ?> items)</span>
-          <span>Individual MRP</span>
+          <span>Individual Price</span>
         </div>
         <?php foreach ($items as $it): ?>
         <div class="bn-item">
@@ -128,7 +127,7 @@ $seo_desc = htmlspecialchars(trim(strip_tags($bundle['description'] ?? '')) ?: (
               <div class="bn-item-size"><?php echo htmlspecialchars($it['size_capsules']); ?></div>
             <?php endif; ?>
           </div>
-          <div class="bn-item-price">₹<?php echo number_format((float)$it['price'], 2); ?></div>
+          <div class="bn-item-price">₹<?php echo number_format(bundle_item_price($it), 2); ?></div>
         </div>
         <?php endforeach; ?>
       </div>

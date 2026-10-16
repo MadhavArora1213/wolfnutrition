@@ -368,8 +368,8 @@ if (empty($gallery)) $gallery = [$product['image_url']];
             $benefit_lines = array_filter(array_map('trim', explode("\n", $product['benefits'])));
             $benefit_items = [];
             foreach ($benefit_lines as $line) {
-                // Strip leading bullet chars (•, -, *, â€¢)
-                $clean = preg_replace('/^[\•\-\*\â€¢\xe2\x80\xa2\xc2\xa7\u2022]+\s*/u', '', $line);
+                // Strip leading bullet chars (•, -, *, §, ·)
+                $clean = preg_replace('/^[\s]*[•\-*§·\x{2022}\x{25AA}\x{25B8}\x{25CF}]+\s*/u', '', $line) ?? $line;
                 $clean = ltrim($clean, "\xe2\x80\xa2\xc2\xa7•-* ");
                 if (!empty($clean)) $benefit_items[] = html_entity_decode(htmlspecialchars_decode($clean), ENT_QUOTES, 'UTF-8');
             }

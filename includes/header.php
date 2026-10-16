@@ -18,6 +18,7 @@ $seo_title = "Wolf Nutrition | Premium Ayurvedic Performance & Vitality Stacks";
 $seo_desc = "Wolf Nutrition merges ancient Ayurvedic wisdom with modern sports science. Buy certified Shilajit, Ashwagandha, and Kutki stacks for stamina and liver support.";
 $seo_keywords = "wolf nutrition, ayurvedic supplements india, shilajit capsules, ashwagandha, liver support kutki, wolftox liver detox, wolfpack vitality, ayurvedic stamina gainer, veggie capsules fssai certified";
 $seo_og_type = "website";
+$og_image = 'assets/images/logo.png';
 $canonical_url = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 
 if ($active_page === 'product.php' && isset($_GET['slug'])) {
@@ -55,8 +56,23 @@ if ($active_page === 'product.php' && isset($_GET['slug'])) {
         $blog_excerpt = !empty($blog_seo['excerpt']) ? $blog_seo['excerpt'] : strip_tags($blog_seo['body']);
         $seo_desc = htmlspecialchars(substr($blog_excerpt, 0, 160));
         $seo_keywords = htmlspecialchars($blog_seo['category_tag']) . ", wolf nutrition, ayurvedic, wellness, blog";
-        $blog_og_image = !empty($blog_seo['cover_image']) ? $blog_seo['cover_image'] : 'assets/images/logo.png';
+        $og_image = !empty($blog_seo['cover_image']) ? $blog_seo['cover_image'] : 'assets/images/logo.png';
         $seo_og_type = "article";
+    }
+} elseif ($active_page === 'bundle.php' && isset($_GET['slug'])) {
+    $stmt_bundle_seo = $pdo->prepare("SELECT title, description, banner_image, combo_price FROM bundles WHERE slug = ? AND status = 1");
+    $stmt_bundle_seo->execute([trim($_GET['slug'])]);
+    $bundle_seo = $stmt_bundle_seo->fetch(PDO::FETCH_ASSOC);
+    if ($bundle_seo) {
+        $seo_title = htmlspecialchars($bundle_seo['title']) . " | Combo Offer | Wolf Nutrition";
+        $bundle_seo_desc = trim(html_entity_decode(strip_tags(fix_text_mojibake((string)$bundle_seo['description'])), ENT_QUOTES, 'UTF-8'));
+        if ($bundle_seo_desc === '') {
+            $bundle_seo_desc = 'Combo offer: ' . $bundle_seo['title'] . ' for ₹' . number_format((float)$bundle_seo['combo_price'], 2) . ' — Wolf Nutrition.';
+        }
+        $seo_desc = htmlspecialchars(mb_substr($bundle_seo_desc, 0, 160));
+        $seo_keywords = htmlspecialchars(strtolower($bundle_seo['title'])) . ", wolf nutrition combo, ayurvedic stack offer";
+        if (!empty($bundle_seo['banner_image'])) $og_image = $bundle_seo['banner_image'];
+        $seo_og_type = "product";
     }
 }
 ?>
@@ -81,7 +97,7 @@ if ($active_page === 'product.php' && isset($_GET['slug'])) {
     <meta property="og:url" content="<?php echo $canonical_url; ?>">
     <meta property="og:title" content="<?php echo $seo_title; ?>">
     <meta property="og:description" content="<?php echo $seo_desc; ?>">
-    <meta property="og:image" content="<?php echo ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/' . (isset($blog_og_image) ? $blog_og_image : 'assets/images/logo.png'); ?>">
+    <meta property="og:image" content="<?php echo ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/' . $og_image; ?>">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="Wolf Nutrition">
@@ -92,7 +108,7 @@ if ($active_page === 'product.php' && isset($_GET['slug'])) {
     <meta name="twitter:url" content="<?php echo $canonical_url; ?>">
     <meta name="twitter:title" content="<?php echo $seo_title; ?>">
     <meta name="twitter:description" content="<?php echo $seo_desc; ?>">
-    <meta name="twitter:image" content="<?php echo ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/' . (isset($blog_og_image) ? $blog_og_image : 'assets/images/logo.png'); ?>">
+    <meta name="twitter:image" content="<?php echo ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/' . $og_image; ?>">
 
     <!-- Mobile Browser Theme Color -->
     <meta name="theme-color" content="#080C10">
