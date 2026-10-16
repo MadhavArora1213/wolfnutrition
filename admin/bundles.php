@@ -35,7 +35,7 @@ $total_savings_all = 0;
 $bundle_details = [];
 foreach ($bundles as $b) {
     $stmt_i = $pdo->prepare("
-        SELECT bi.*, p.name as p_name, p.image_url, pv.size_capsules, pv.sale_price
+        SELECT bi.*, p.name as p_name, p.image_url, pv.size_capsules, pv.price, pv.sale_price
         FROM bundle_items bi
         JOIN products p ON bi.product_id = p.id
         JOIN product_variants pv ON bi.variant_id = pv.id
@@ -44,13 +44,22 @@ foreach ($bundles as $b) {
     $stmt_i->execute([$b['id']]);
     $items = $stmt_i->fetchAll();
     
+    // Individual total = MRP sum (sale price only as fallback when MRP is unset)
     $individual_total = 0;
-    foreach ($items as $item) $individual_total += $item['sale_price'];
+    foreach ($items as $item) {
+        $individual_total += ((float)$item['price'] > 0) ? (float)$item['price'] : (float)$item['sale_price'];
+    }
+    // Admin's own combo MRP (bundles.individual_mrp) overrides the auto total
+    $custom_mrp = (float)$b['individual_mrp'] > 0;
+    if ($custom_mrp) {
+        $individual_total = (float)$b['individual_mrp'];
+    }
     $savings = $individual_total - $b['combo_price'];
     
     $bundle_details[$b['id']] = [
         'items' => $items,
         'individual_total' => $individual_total,
+        'custom_mrp' => $custom_mrp,
         'savings' => $savings,
         'savings_pct' => $individual_total > 0 ? round((1 - $b['combo_price'] / $individual_total) * 100) : 0
     ];
@@ -228,7 +237,7 @@ foreach ($bundles as $b) {
                             </div>
                             <?php if ($d['individual_total'] > 0): ?>
                                 <div style="flex:1; text-align:right;">
-                                    <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:2px;">Individual Total</div>
+                                    <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:2px;">Individual MRP<?php if (!empty($d['custom_mrp'])): ?> <span style="color:var(--gold-primary);">· custom</span><?php endif; ?></div>
                                     <div style="font-size:0.95rem; color:var(--text-muted); text-decoration:line-through;">₹<?php echo number_format($d['individual_total'], 0); ?></div>
                                 </div>
                                 <?php if ($savings > 0): ?>
@@ -258,7 +267,7 @@ foreach ($bundles as $b) {
                                                 <?php echo htmlspecialchars($item['size_capsules']); ?>
                                             </div>
                                         </div>
-                                        <div style="font-size:0.85rem; color:var(--text-muted);">₹<?php echo number_format($item['sale_price'], 0); ?></div>
+                                        <div style="font-size:0.85rem; color:var(--text-muted); text-decoration:line-through;">₹<?php echo number_format(((float)$item['price'] > 0) ? (float)$item['price'] : (float)$item['sale_price'], 0); ?></div>
                                     </div>
                                 <?php endforeach; ?>
                             </div>

@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_bundle'])) {
     $slug = trim($_POST['slug']);
     $description = trim($_POST['description']);
     $combo_price = (float)$_POST['combo_price'];
+    $individual_mrp = isset($_POST['individual_mrp']) ? max(0, (float)$_POST['individual_mrp']) : 0;
     $discount_percent = (float)$_POST['discount_percent'];
     $display_order = (int)$_POST['display_order'];
     $status = isset($_POST['status']) ? 1 : 0;
@@ -49,10 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_bundle'])) {
             $action_error = "A combo with this slug already exists.";
         } else {
             $stmt_i = $pdo->prepare("
-                INSERT INTO bundles (title, slug, description, banner_image, combo_price, discount_percent, display_order, status, category_id) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO bundles (title, slug, description, banner_image, combo_price, individual_mrp, discount_percent, display_order, status, category_id) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
-            $stmt_i->execute([$title, $slug, $description, $banner_image, $combo_price, $discount_percent, $display_order, $status, $category_id]);
+            $stmt_i->execute([$title, $slug, $description, $banner_image, $combo_price, $individual_mrp, $discount_percent, $display_order, $status, $category_id]);
             $new_id = $pdo->lastInsertId();
             header("Location: bundle_edit.php?id=" . $new_id);
             exit();
@@ -143,6 +144,12 @@ $total_bundles = (int)$stmt_total->fetchColumn();
                     <label for="b-order">Display Order</label>
                     <input type="number" name="display_order" id="b-order" class="form-control" value="0">
                 </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:20px; max-width:400px;">
+                <label for="b-mrp">Individual MRP (₹) — struck-through total</label>
+                <input type="number" step="0.01" min="0" name="individual_mrp" id="b-mrp" class="form-control" value="0">
+                <small style="color:var(--text-muted); font-size:0.75rem; margin-top:4px; display:block;">Completely your choice — leave <strong>0</strong> to auto-calculate from the MRPs of the products you add, or type any value to show it as-is (e.g. 4999).</small>
             </div>
 
             <!-- Media -->

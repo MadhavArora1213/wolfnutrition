@@ -28,7 +28,7 @@ $featured_bundles = [];
 if (!empty($all_active_bundles)) {
     foreach (array_slice($all_active_bundles, 0, 3) as $fb) {
         $fb['items'] = get_bundle_items_detail((int)$fb['id']);
-        $fb['individual_total'] = bundle_individual_total($fb['items']);
+        $fb['individual_total'] = bundle_individual_mrp($fb, $fb['items']);
         $fb['savings'] = max(0, $fb['individual_total'] - (float)$fb['combo_price']);
         $featured_bundles[] = $fb;
     }

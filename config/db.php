@@ -43,6 +43,17 @@ try {
             attempt_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB;
     ");
+
+    // Auto-migrate: admin-editable combo MRP (bundles.individual_mrp).
+    // Added for the combo page's struck-through "Individual MRP" field.
+    // Runs only when the column is missing, so it is safe on every request.
+    try {
+        if ($pdo->query("SHOW COLUMNS FROM bundles LIKE 'individual_mrp'")->fetch() === false) {
+            $pdo->exec("ALTER TABLE bundles ADD COLUMN individual_mrp DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER combo_price");
+        }
+    } catch (PDOException $e) {
+        // bundles table not created yet (fresh install) — nothing to migrate
+    }
 } catch (PDOException $e) {
     die("Database connection failed: " . $e->getMessage());
 }

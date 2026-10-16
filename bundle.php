@@ -13,8 +13,8 @@ if (!$bundle) { header('Location: index.php'); exit(); }
 $items = get_bundle_items_detail((int)$bundle['id']);
 if (empty($items)) { header('Location: index.php'); exit(); }
 
-// Individual total = what the same items cost bought separately (matches the admin "Individual total")
-$individual_total = bundle_individual_total($items);
+// Individual total = sum of the items' MRP (matches the admin "Individual MRP")
+$individual_total = bundle_individual_mrp($bundle, $items);
 $savings = max(0, $individual_total - (float)$bundle['combo_price']);
 $savings_pct = $individual_total > 0 ? round((1 - ((float)$bundle['combo_price'] / $individual_total)) * 100) : 0;
 $all_in_stock = true;
@@ -114,7 +114,7 @@ $banner = !empty($bundle['banner_image']) ? $bundle['banner_image'] : (!empty($i
       <div class="bn-items">
         <div class="bn-items-h">
           <span>What's inside (<?php echo count($items); ?> items)</span>
-          <span>Individual Price</span>
+          <span>Individual MRP</span>
         </div>
         <?php foreach ($items as $it): ?>
         <div class="bn-item">
@@ -127,7 +127,7 @@ $banner = !empty($bundle['banner_image']) ? $bundle['banner_image'] : (!empty($i
               <div class="bn-item-size"><?php echo htmlspecialchars($it['size_capsules']); ?></div>
             <?php endif; ?>
           </div>
-          <div class="bn-item-price">₹<?php echo number_format(bundle_item_price($it), 2); ?></div>
+          <div class="bn-item-price">₹<?php echo number_format(bundle_item_mrp($it), 2); ?></div>
         </div>
         <?php endforeach; ?>
       </div>
@@ -135,6 +135,14 @@ $banner = !empty($bundle['banner_image']) ? $bundle['banner_image'] : (!empty($i
       <div class="bn-stock <?php echo $all_in_stock ? '' : 'oos'; ?>">
         <i class="fas <?php echo $all_in_stock ? 'fa-circle-check' : 'fa-circle-xmark'; ?>"></i>
         <?php echo $all_in_stock ? 'In stock — ready to ship' : 'Currently out of stock'; ?>
+      </div>
+
+      <!-- Pay on Delivery via Amazon / Flipkart -->
+      <div style="display:flex;align-items:center;gap:8px;margin:12px 0;font-size:0.85rem;padding:9px 12px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.22);border-radius:10px;flex-wrap:wrap;">
+        <i class="fas fa-money-bill-wave" style="color:#2ecc71;"></i>
+        <span style="color:#2ecc71;font-weight:700;">Cash on Delivery available on Amazon &amp; Flipkart</span>
+        <span style="color:rgba(255,255,255,0.3);">|</span>
+        <span style="color:rgba(255,255,255,0.5);">Order here to pay online via UPI / Cards</span>
       </div>
 
       <div class="bn-actions">

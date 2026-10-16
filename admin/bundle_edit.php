@@ -41,7 +41,7 @@ foreach ($all_variants as $v) {
 
 // Fetch current items
 $stmt_items = $pdo->prepare("
-    SELECT bi.*, p.name as p_name, pv.size_capsules, pv.sale_price
+    SELECT bi.*, p.name as p_name, pv.size_capsules, pv.price, pv.sale_price
     FROM bundle_items bi
     JOIN products p ON bi.product_id = p.id
     JOIN product_variants pv ON bi.variant_id = pv.id
@@ -55,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_bundle'])) {
     $title = trim($_POST['title']);
     $description = trim($_POST['description']);
     $combo_price = (float)$_POST['combo_price'];
+    $individual_mrp = isset($_POST['individual_mrp']) ? max(0, (float)$_POST['individual_mrp']) : 0;
     $discount_percent = (float)$_POST['discount_percent'];
     $display_order = (int)$_POST['display_order'];
     $status = isset($_POST['status']) ? 1 : 0;
@@ -79,9 +80,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_bundle'])) {
     }
 
     $stmt_u = $pdo->prepare("
-        UPDATE bundles SET title = ?, description = ?, banner_image = ?, combo_price = ?, discount_percent = ?, display_order = ?, status = ?, category_id = ? WHERE id = ?
+        UPDATE bundles SET title = ?, description = ?, banner_image = ?, combo_price = ?, individual_mrp = ?, discount_percent = ?, display_order = ?, status = ?, category_id = ? WHERE id = ?
     ");
-    $stmt_u->execute([$title, $description, $banner_image, $combo_price, $discount_percent, $display_order, $status, $category_id, $edit_id]);
+    $stmt_u->execute([$title, $description, $banner_image, $combo_price, $individual_mrp, $discount_percent, $display_order, $status, $category_id, $edit_id]);
     
     // Refresh
     $stmt_b2 = $pdo->prepare("SELECT * FROM bundles WHERE id = ?");
@@ -125,7 +126,7 @@ if (isset($_GET['msg'])) {
 
 // Re-fetch items after changes
 $stmt_items2 = $pdo->prepare("
-    SELECT bi.*, p.name as p_name, pv.size_capsules, pv.sale_price
+    SELECT bi.*, p.name as p_name, pv.size_capsules, pv.price, pv.sale_price
     FROM bundle_items bi
     JOIN products p ON bi.product_id = p.id
     JOIN product_variants pv ON bi.variant_id = pv.id
@@ -248,10 +249,21 @@ $items = $stmt_items2->fetchAll();
 
                     <div class="bundle-edit-form-fields" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
                         <div class="form-group">
+                            <label for="b-mrp">Individual MRP (₹) — struck-through total</label>
+                            <input type="number" step="0.01" min="0" name="individual_mrp" id="b-mrp" class="form-control"
+                                value="<?php echo (float)($bundle['individual_mrp'] ?? 0); ?>">
+                            <small style="color:var(--text-muted); font-size:0.75rem; margin-top:4px; display:block;">
+                                Your own value — <strong>0 = auto</strong> (sum of the added products' MRPs), anything else is shown as-is. Not fetched from the products.
+                            </small>
+                        </div>
+                        <div class="form-group">
                             <label for="b-order">Display Order</label>
                             <input type="number" name="display_order" id="b-order" class="form-control" 
                                 value="<?php echo $bundle['display_order']; ?>">
                         </div>
+                    </div>
+
+                    <div class="bundle-edit-form-fields" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
                         <div class="form-group" style="display:flex; align-items:flex-end;">
                             <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.9rem; padding-bottom:10px;">
                                 <input type="checkbox" name="status" value="1" <?php echo $bundle['status'] ? 'checked' : ''; ?> style="accent-color:var(--gold-primary); width:18px; height:18px;">
@@ -296,7 +308,7 @@ $items = $stmt_items2->fetchAll();
                                     <i class="fas fa-check-circle" style="color:var(--gold-primary); margin-right:8px;"></i>
                                     <strong><?php echo htmlspecialchars($item['p_name']); ?></strong>
                                     <span style="color:var(--text-muted); font-size:0.8rem;">(<?php echo htmlspecialchars($item['size_capsules']); ?>)</span>
-                                    <span style="color:var(--text-muted); font-size:0.8rem; margin-left:8px;">— ₹<?php echo number_format($item['sale_price'], 2); ?></span>
+                                    <span style="color:var(--text-muted); font-size:0.8rem; margin-left:8px;">— MRP ₹<?php echo number_format(((float)$item['price'] > 0) ? (float)$item['price'] : (float)$item['sale_price'], 2); ?></span>
                                 </span>
                                 <a href="bundle_edit.php?id=<?php echo $edit_id; ?>&remove_item_id=<?php echo $item['id']; ?>" 
                                    onclick="return confirm('Remove this item from the combo?');"
@@ -353,16 +365,20 @@ $items = $stmt_items2->fetchAll();
                     <strong style="color:var(--success-color); font-size:1.1rem;">₹<?php echo number_format($bundle['combo_price'], 2); ?></strong>
                 </div>
                 <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
-                    <span style="color:var(--text-muted);">Individual total</span>
+                    <span style="color:var(--text-muted);">Individual MRP<?php echo ((float)($bundle['individual_mrp'] ?? 0) > 0) ? ' <span style="color:var(--gold-primary); font-size:0.75rem;">· custom</span>' : ' <span style="font-size:0.75rem;">· auto</span>'; ?></span>
                     <strong style="color:#fff;">
                         ₹<?php 
+                        $custom_mrp = (float)($bundle['individual_mrp'] ?? 0) > 0;
                         $total_individual = 0;
-                        foreach ($items as $item) $total_individual += $item['sale_price'];
+                        foreach ($items as $item) {
+                            $total_individual += ((float)$item['price'] > 0) ? (float)$item['price'] : (float)$item['sale_price'];
+                        }
+                        if ($custom_mrp) $total_individual = (float)$bundle['individual_mrp'];
                         echo number_format($total_individual, 2);
                         ?>
                     </strong>
                 </div>
-                <?php if ($total_individual > 0): ?>
+                <?php if ($total_individual > $bundle['combo_price']): ?>
                 <div style="display:flex; justify-content:space-between; font-size:0.9rem; padding-top:10px; border-top:1px solid var(--border-color);">
                     <span style="color:var(--text-muted);">Customer saves</span>
                     <strong style="color:var(--success-color); font-size:1rem;">

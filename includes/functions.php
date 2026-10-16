@@ -425,7 +425,7 @@ function get_bundles_for_category($category_id = false) {
     $bundles = $stmt->fetchAll();
     foreach ($bundles as &$b) {
         $b['items'] = get_bundle_items_detail((int)$b['id']);
-        $b['individual_total'] = bundle_individual_total($b['items']);
+        $b['individual_total'] = bundle_individual_mrp($b, $b['items']);
         $b['savings'] = max(0, $b['individual_total'] - (float)$b['combo_price']);
     }
     unset($b);
@@ -448,21 +448,44 @@ function get_bundle_items_detail($bundle_id) {
     return $stmt->fetchAll();
 }
 
+// MRP of one bundle line item (the variant's marked price).
+// Falls back to the sale price when no MRP is set.
+function bundle_item_mrp($item) {
+    $mrp = (float)($item['price'] ?? 0);
+    return $mrp > 0 ? $mrp : (float)($item['sale_price'] ?? 0);
+}
+
 // Price a customer pays for one bundle line item bought on its own.
-// Uses the variant's sale price (falls back to MRP when no sale price is set),
-// so the storefront always matches the "Individual total" shown in the admin.
+// Uses the variant's sale price (falls back to MRP when no sale price is set).
 function bundle_item_price($item) {
     $sale = (float)($item['sale_price'] ?? 0);
     return $sale > 0 ? $sale : (float)($item['price'] ?? 0);
 }
 
-// Sum of the individual item prices for a combo.
+// "Individual total" shown struck-through next to the combo price.
+// This is the sum of the items' MRPs (NOT their discounted sale prices),
+// so the displayed savings = MRP total - combo price, on the storefront and in the admin.
 function bundle_individual_total($items) {
     $total = 0.0;
     foreach ((array)$items as $it) {
-        $total += bundle_item_price($it);
+        $total += bundle_item_mrp($it);
     }
     return $total;
+}
+
+// Struck-through "Individual MRP" to display for a combo.
+// Admin's own value (bundles.individual_mrp) always wins; when it is 0/unset the
+// total falls back to the sum of the MRPs of the products added to the combo.
+// $items is optional — pass it when they are already loaded to avoid a second query.
+function bundle_individual_mrp($bundle, $items = null) {
+    $override = (float)($bundle['individual_mrp'] ?? 0);
+    if ($override > 0) {
+        return $override;
+    }
+    if ($items === null) {
+        $items = get_bundle_items_detail((int)$bundle['id']);
+    }
+    return bundle_individual_total($items);
 }
 
 // Repair double-encoded characters (mojibake) left in stored copy by an old
